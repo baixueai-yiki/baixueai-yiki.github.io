@@ -4,80 +4,85 @@
 <meta charset="UTF-8">
 <title>萝卜的博客</title>
 <style>
-  body { font-family: sans-serif; margin:0; background-color: #f5f5f5; }
+  body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5; }
 
   /* 顶图 */
   .top-banner {
     width: 100%;
-    height: 300px;
-    background-image: url('Content/Images/mother.png'); /* 替换成你的图片路径 */
+    height: 350px;
+    background-image: url('mother.png'); /* 替换成你的图片路径 */
     background-size: cover;
     background-position: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
   }
 
   /* 栏目容器 */
   .tab-header {
     display: flex;
     justify-content: space-around;
-    background-color: #f0f0f0;
-    border-bottom: 2px solid #ccc;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 10px 0;
   }
 
-  /* 每个栏目按钮 */
+  /* 横栏按钮样式 */
   .tab-header button {
     flex: 1;
+    margin: 0 10px;
     padding: 15px;
     border: none;
-    background-color: #f0f0f0;
-    cursor: pointer;
+    border-radius: 25px 25px 0 0;
     font-size: 18px;
-    border-radius: 50px 50px 0 0; /* 封闭圆角 */
-    transition: all 0.3s;
+    font-weight: 500;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4); /* 默认渐变 */
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
     position: relative;
   }
 
-  /* 鼠标悬停效果 */
+  /* hover 动画 */
   .tab-header button:hover {
-    background: linear-gradient(145deg, #e0e0e0, #f8f8f8);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #a18cd1, #fbc2eb);
   }
 
-  /* 当前选中栏目 */
+  /* 当前选中按钮 */
   .tab-header button.active {
-    background-color: #fff;
-    font-weight: bold;
-    border-bottom: 2px solid #fff; /* 连到内容区 */
-    box-shadow: inset 0 -2px 0 #fff;
+    background: linear-gradient(135deg, #f6d365, #fda085);
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
+    color: #fff;
   }
 
   /* 内容区 */
   .tab-content {
     display: none;
-    padding: 20px;
-    border: 2px solid #ccc;
-    border-top: none;
+    padding: 25px;
+    margin: 0 10px 20px 10px;
+    border-radius: 0 0 20px 20px;
     background-color: #fff;
-    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     animation: fadeIn 0.3s;
   }
 
-  /* 当前显示内容 */
   .tab-content.active {
     display: block;
   }
 
-  /* 内容切换动画 */
   @keyframes fadeIn {
     from {opacity: 0;}
     to {opacity: 1;}
   }
+
 </style>
 </head>
 <body>
 
+<!-- 顶图 -->
 <div class="top-banner"></div>
 
+<!-- 横栏按钮 -->
 <div class="tab-header">
   <button class="tab-btn active" data-tab="tab1">一</button>
   <button class="tab-btn" data-tab="tab2">二</button>
@@ -85,17 +90,18 @@
   <button class="tab-btn" data-tab="tab4">四</button>
 </div>
 
+<!-- 内容区 -->
 <div id="tab1" class="tab-content active">
-  <p>栏目一的内容区域，可放文字、图片、链接等。</p>
+  <p>栏目一内容，可放文字、图片、作品展示等。</p>
 </div>
 <div id="tab2" class="tab-content">
-  <p>栏目二的内容区域。</p>
+  <p>栏目二内容。</p>
 </div>
 <div id="tab3" class="tab-content">
-  <p>栏目三的内容区域。</p>
+  <p>栏目三内容。</p>
 </div>
 <div id="tab4" class="tab-content">
-  <p>栏目四的内容区域。</p>
+  <p>栏目四内容。</p>
 </div>
 
 <script>
@@ -104,11 +110,8 @@
 
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
-      // 移除其他按钮和内容的 active
       buttons.forEach(b => b.classList.remove('active'));
       contents.forEach(c => c.classList.remove('active'));
-
-      // 激活当前按钮和对应内容
       btn.classList.add('active');
       const tabId = btn.getAttribute('data-tab');
       document.getElementById(tabId).classList.add('active');
