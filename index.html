@@ -1,129 +1,104 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>萝卜的博客</title>
+<meta charset="UTF-8">
+<title>白雪儿的博客</title>
+<style>
+  body { font-family: sans-serif; margin:0; }
 
-  <!-- favicon -->
-  <link rel="icon" href="Content/icon/carrot.png" type="image/png">
+  /* 顶图 */
+  .top-banner {
+    width: 100%;
+    height: 300px;
+    background-image: url('mother.png'); /* 顶图 */
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 20px;
+  }
 
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background-color: #f0f0f0;
-    }
+  /* 栏目容器 */
+  .tab-header {
+    display: flex;
+    justify-content: space-around;
+    background-color: #f0f0f0;
+    border-bottom: 2px solid #ccc;
+  }
 
-    /* 顶图 */
-    .top-banner {
-      width: 100%;
-      height: 300px;
-      background-image: url('Content/Images/qing.jpg');
-      background-size: cover;
-      background-position: center;
-      position: relative;
-    }
+  /* 每个栏目按钮 */
+  .tab-header button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 50px 50px 0 0; /* 封闭的圆角 */
+    transition: all 0.3s;
+  }
 
-    /* 横栏容器 */
-    .columns {
-      display: flex;
-      justify-content: space-around;
-      position: relative;
-      margin-top: 20px; /* 顶图下面 */
-      padding: 0 20px;
-      box-sizing: border-box;
-      gap: 10px;
-    }
+  /* 当前选中栏目 */
+  .tab-header button.active {
+    background-color: #fff;
+    border-bottom: 2px solid #fff; /* 看起来连到内容区 */
+    font-weight: bold;
+  }
 
-    /* 横栏按钮 */
-    .collapsible {
-      flex: 1;
-      padding: 15px;
-      background-color: rgba(255, 255, 255, 0.3);
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      border-radius: 10px;
-      text-align: center;
-      color: #fff;
-      cursor: pointer;
-      backdrop-filter: blur(5px);
-      transition: transform 0.2s, background-color 0.2s;
-    }
+  /* 内容区 */
+  .tab-content {
+    display: none;
+    padding: 20px;
+    border: 2px solid #ccc;
+    border-top: none; /* 视觉上和栏目连起来 */
+    background-color: #fff;
+  }
 
-    .collapsible:hover {
-      transform: scale(1.05);
-      background-color: rgba(255, 255, 255, 0.4);
-    }
-
-    /* 折叠内容 */
-    .content {
-      display: none; 
-      margin-top: 10px;
-      padding: 10px;
-      background-color: rgba(255,255,255,0.3);
-      border: 2px solid rgba(255,255,255,0.6);
-      border-radius: 10px;
-      color: #fff;
-      backdrop-filter: blur(5px);
-      width: 100%;
-    }
-
-    /* 每个横栏+内容包裹 */
-    .column-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-  </style>
+  /* 显示当前内容 */
+  .tab-content.active {
+    display: block;
+  }
+</style>
 </head>
 <body>
 
-  <!-- 顶图 -->
-  <div class="top-banner"></div>
+<div class="top-banner"></div>
 
-  <!-- 横栏 -->
-  <div class="columns">
-    <div class="column-wrapper">
-      <div class="collapsible">一</div>
-      <div class="content">
-        <p>这里是栏目一的内容，可以写文字或图片。</p>
-      </div>
-    </div>
+<div class="tab-header">
+  <button class="tab-btn active" data-tab="tab1">一</button>
+  <button class="tab-btn" data-tab="tab2">二</button>
+  <button class="tab-btn" data-tab="tab3">三</button>
+  <button class="tab-btn" data-tab="tab4">四</button>
+</div>
 
-    <div class="column-wrapper">
-      <div class="collapsible">二</div>
-      <div class="content">
-        <p>这里是栏目二的内容。</p>
-      </div>
-    </div>
+<div id="tab1" class="tab-content active">
+  <p>这里是栏目一的内容，可以放文字、图片等。</p>
+</div>
+<div id="tab2" class="tab-content">
+  <p>这里是栏目二的内容。</p>
+</div>
+<div id="tab3" class="tab-content">
+  <p>这里是栏目三的内容。</p>
+</div>
+<div id="tab4" class="tab-content">
+  <p>这里是栏目四的内容。</p>
+</div>
 
-    <div class="column-wrapper">
-      <div class="collapsible">三</div>
-      <div class="content">
-        <p>这里是栏目三的内容。</p>
-      </div>
-    </div>
+<script>
+const buttons = document.querySelectorAll('.tab-btn');
+const contents = document.querySelectorAll('.tab-content');
 
-    <div class="column-wrapper">
-      <div class="collapsible">四</div>
-      <div class="content">
-        <p>这里是栏目四的内容。</p>
-      </div>
-    </div>
-  </div>
+buttons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // 清除其他按钮和内容的 active
+    buttons.forEach(b => b.classList.remove('active'));
+    contents.forEach(c => c.classList.remove('active'));
 
-  <script>
-    const collapsibles = document.querySelectorAll(".collapsible");
-    collapsibles.forEach(btn => {
-      btn.addEventListener("click", function() {
-        const content = this.nextElementSibling;
-        if (content.style.display === "block") {
-          content.style.display = "none";
-        } else {
-          content.style.display = "block";
-        }
-      });
-    });
-  </script>
+    // 激活当前点击的按钮和对应内容
+    btn.classList.add('active');
+    const tabId = btn.getAttribute('data-tab');
+    document.getElementById(tabId).classList.add('active');
+  });
+});
+</script>
 
 </body>
 </html>
