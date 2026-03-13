@@ -6,8 +6,11 @@
 **原著**：《爱之巢》  
 **原著作者**：莲花池池  
 bilibili：https://space.bilibili.com/760048  
-![qing.png](/Content/Images/qing.png)
-![qing.jpg](/Content/Images/qing.jpg)
+
+<div style="display: flex; gap: 10px;">
+  <img src="/Content/Images/qing.png" alt="晴小姐图1" style="flex: 1; width: 100%; height: auto;">
+  <img src="/Content/Images/qing.jpg" alt="晴小姐图2" style="flex: 1; width: 100%; height: auto;">
+</div>
 
 **脚本作者**：青音连旭  
 视频：https://www.bilibili.com/video/BV1TAhoziEmF
