@@ -1,8 +1,6 @@
-# 1.如何在git上挂一个博客（手机可用）    
-<details>
-  <summary style="display: inline;">
-    展开
-  </summary>
+<h2 style="display: inline;">1.如何在git上挂一个博客（手机可用）</h2>
+<details style="display: inline;">
+  <summary style="display: inline; cursor: pointer; color: blue; margin-left: 10px;">展开</summary>
 官方教程：https://docs.github.com/en/pages/quickstart  
 1.在git创建一个新的库，库的名字为：<git用户名>.github.io  
 创建时勾选添加 README（添加自述文件）  
@@ -15,11 +13,9 @@
 [也可以下载我的，记得上传到自己的库里](https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/index.html?raw=true)
 </details>
 
-# 2.晴小姐陪伴系统  
-<details>
-  <summary style="display: inline;">
-    展开
-  </summary>
+<h2 style="display: inline;">2.晴小姐陪伴系统</h2>
+<details style="display: inline;">
+  <summary style="display: inline; cursor: pointer; color: blue; margin-left: 10px;">展开</summary>
 这里有一个我用ai修改的同人小脚本，放在这里方便传播：  
 [晴小姐陪伴系统3.0改](https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/share/晴小姐陪伴系统3.0改.zip?raw=true)  
 **原著**：《爱之巢》  
@@ -30,5 +26,5 @@ bilibili：https://space.bilibili.com/760048
   <img src="/Content/Images/qing.jpg" alt="晴小姐图2" style="width: 50%; height: auto;">
 </div>  
 **脚本作者**：青音连旭  
-视频：https://www.bilibili.com/video/BV1TAhoziEmF  
+视频：https://www.bilibili.com/video/BV1TAhoziEmF
 </details>
