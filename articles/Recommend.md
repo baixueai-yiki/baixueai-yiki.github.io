@@ -1,4 +1,6 @@
-# 1.微软云盘OneDrive  
+# 1.微软云盘OneDrive
+<details>
+  <summary>展开</summary>
 不知道为什么很多人吐槽OneDrive很讨厌，我是感觉超方便的啊  
 你可以在电脑上创建一个他自己的文件夹（图1）你还可以把Billfish的库也创建在这里  
 然后你在电脑上进行的任何操作（添加、删除、移动）他都会同步到云端
@@ -8,3 +10,4 @@
   <img src="/Content/Images/OneDrive.png" alt="OneDrive1" style="width: 50%; height: auto;">
   <img src="/Content/Images/OneDrive.jpg" alt="OneDrive2" style="width: 50%; height: auto;">
 </div>  
+</details>
