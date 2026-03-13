@@ -25,8 +25,8 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   position: absolute;
   bottom: -4px;
   width: 100%;
-  padding: 0 0px;
-  z-index: 4; /* 确保按钮在顶图上方 */
+  padding: 0;
+  z-index: 4;
 }
 
 /* 按钮样式 */
@@ -42,15 +42,11 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
-/* hover */
 .tab-header button:hover {
   background-color: rgba(255,255,255,0.1);
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
-
-/* 当前选中 */
 .tab-header button.active {
   background-color: rgba(255,255,255,0.5);
   border-bottom-left-radius: 0;
@@ -84,7 +80,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   background-image: url('Content/Images/bg.png');
   background-size: cover;
   background-position: top;
-  z-index: -1; /* 在内容下面 */
+  z-index: -1;
 }
 
 /* ❄ 雪花 */
@@ -97,7 +93,6 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   z-index: 6;
   animation: snowfall linear forwards;
 }
-
 @keyframes snowfall {
   0% { transform: translateX(0px) translateY(0px) rotate(0deg); opacity:1; }
   50% { transform: translateX(20px) translateY(50vh) rotate(180deg); }
@@ -121,44 +116,46 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 </div>
 
 <!-- 内容区 -->
-<div id="tab1" class="tab-content active">
-  <p>白雪是世界上最可爱的小女孩，她的皮肤如雪般白哲，嘴唇就像苹果一样红、心同那黑檀木似的黑。</p>
-</div>
-<div id="tab2" class="tab-content">
-  <p>栏目二内容。</p>
-</div>
-<div id="tab3" class="tab-content">
-  <p>
-    这里有一个经我修改的同人小脚本，放在这里方便传播：
-    <a href="https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/share/晴小姐陪伴系统3.0改.zip?raw=true" download>
-      晴小姐陪伴系统3.0改
-    </a>
-    <br>原著《爱之巢》，原著作者莲花池池，bilibili：https://space.bilibili.com/760048
-    <br>脚本作者青音连旭，视频：https://www.bilibili.com/video/BV1TAhoziEmF
-  </p>
-</div>
-<div id="tab4" class="tab-content">
-  <p>栏目四内容。</p>
-</div>
+<div id="tab1" class="tab-content active"></div>
+<div id="tab2" class="tab-content"></div>
+<div id="tab3" class="tab-content"></div>
+<div id="tab4" class="tab-content"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-// tab切换逻辑
+// Markdown 文件路径，对应英文文件名
+const articleFiles = {
+  tab1: 'articles/About.md',
+  tab2: 'articles/Demo.md',
+  tab3: 'articles/Share.md',
+  tab4: 'articles/Recommend.md'
+};
+
+// 加载 Markdown 内容
+function loadMarkdown(tabId){
+  const file = articleFiles[tabId];
+  if(!file) return;
+  fetch(file)
+    .then(res => res.text())
+    .then(md => {
+      document.getElementById(tabId).innerHTML = marked.parse(md);
+    });
+}
+
+// 页面加载时默认加载第一个栏目
+loadMarkdown('tab1');
+
+// tab切换逻辑 + 展开/收起
 const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
-
 buttons.forEach(btn => {
   btn.addEventListener('click', () => {
     const tabId = btn.getAttribute('data-tab');
-    contents.forEach(c => {
-      if(c.id === tabId){
-        c.classList.toggle('active'); // 点击展开/收起
-      } else {
-        c.classList.remove('active'); // 其他隐藏
-      }
-    });
-    // 按钮高亮
+    const content = document.getElementById(tabId);
+    content.classList.toggle('active'); // 点击展开/收起
     buttons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    loadMarkdown(tabId);
   });
 });
 
@@ -176,7 +173,6 @@ function createSnow(){
   setTimeout(()=>snow.remove(), duration*1000);
 }
 setInterval(createSnow, 150);
-
 </script>
 
 </body>
