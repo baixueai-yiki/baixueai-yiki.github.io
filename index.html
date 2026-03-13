@@ -4,99 +4,102 @@
 <meta charset="UTF-8">
 <title>萝卜的博客</title>
 <style>
-body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5; }
-
-/* 顶图 */
+body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5; }  /* 顶图 */
 .top-banner {
-  width: 100%;
-  height: 350px;
-  background-image: url('Content/Images/mother.png');
-  background-size: cover;
-  background-position: top center;
-  position: relative;
-  box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
-  z-index: 3;
+width: 100%;
+height: 350px;
+background-image: url('Content/Images/mother.png');
+background-size: cover;
+background-position: top center;
+position: relative;
+box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
+z-index: 3;
 }
 
 /* 横栏按钮容器 */
 .tab-header {
-  display: flex;
-  justify-content: space-around;
-  position: absolute;
-  bottom: -4px;
-  width: 100%;
-  padding: 0;
-  z-index: 4;
+display: flex;
+justify-content: space-around;
+position: absolute;
+bottom: -4px;
+width: 100%;
+padding: 0 0px;
+z-index: 4; /* 确保按钮在顶图上方 */
 }
 
 /* 按钮样式 */
 .tab-header button {
-  flex: 1;
-  margin: 0 10px;
-  padding: 15px;
-  border: 2px solid #ccc;
-  border-radius: 25px;
-  background-color: rgba(255,255,255,0.3);
-  font-size: 18px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
+flex: 1;
+margin: 0 10px;
+padding: 15px;
+border: 2px solid #ccc;
+border-radius: 25px;
+background-color: rgba(255,255,255,0.3);
+font-size: 18px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.3s ease;
 }
+
+/* hover */
 .tab-header button:hover {
-  background-color: rgba(255,255,255,0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+background-color: rgba(255,255,255,0.1);
+transform: translateY(-2px);
+box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
+
+/* 当前选中 */
 .tab-header button.active {
-  background-color: rgba(255,255,255,0.5);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
+background-color: rgba(255,255,255,0.5);
+border-bottom-left-radius: 0;
+border-bottom-right-radius: 0;
+box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
 }
 
 /* 内容区 */
 .tab-content {
-  display: none;
-  position: relative;
-  z-index: 5;
-  padding: 25px;
-  margin: 0 20px -20px 20px;
-  border-radius: 0 0 20px 20px;
-  background-color: rgba(255,255,255,0.85);
-  border: 2px solid #ccc;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+display: none;
+position: relative;
+z-index: 5;
+padding: 25px;
+margin: 0 20px -20px 20px;
+border-radius: 0 0 20px 20px;
+background-color: rgba(255,255,255,0.85);
+border: 2px solid #ccc;
+box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 .tab-content.active {
-  display: block;
+display: block;
 }
 
 /* 背景图随页面高度自动铺满 */
 .content-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('Content/Images/bg.png');
-  background-size: cover;
-  background-position: top;
-  z-index: -1;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-image: url('Content/Images/bg.png');
+background-size: cover;
+background-position: top;
+z-index: -1; /* 在内容下面 */
 }
 
 /* ❄ 雪花 */
 .snowflake{
-  position: fixed;
-  top: -10px;
-  color: white;
-  pointer-events: none;
-  user-select: none;
-  z-index: 6;
-  animation: snowfall linear forwards;
+position: fixed;
+top: -10px;
+color: white;
+pointer-events: none;
+user-select: none;
+z-index: 6;
+animation: snowfall linear forwards;
 }
+
 @keyframes snowfall {
-  0% { transform: translateX(0px) translateY(0px) rotate(0deg); opacity:1; }
-  50% { transform: translateX(20px) translateY(50vh) rotate(180deg); }
-  100% { transform: translateX(-20px) translateY(100vh) rotate(360deg); opacity:0; }
+0% { transform: translateX(0px) translateY(0px) rotate(0deg); opacity:1; }
+50% { transform: translateX(20px) translateY(50vh) rotate(180deg); }
+100% { transform: translateX(-20px) translateY(100vh) rotate(360deg); opacity:0; }
 }
 </style>
 </head>
@@ -108,10 +111,10 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 <!-- 顶图 -->
 <div class="top-banner">
   <div class="tab-header">
-    <button class="tab-btn active" data-tab="tab1">介绍</button>
+    <button class="tab-btn active" data-tab="tab1">关于</button>
     <button class="tab-btn" data-tab="tab2">测试</button>
     <button class="tab-btn" data-tab="tab3">分享</button>
-    <button class="tab-btn" data-tab="tab4">收藏</button>
+    <button class="tab-btn" data-tab="tab4">安利</button>
   </div>
 </div>
 
@@ -121,40 +124,27 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 <div id="tab3" class="tab-content"></div>
 <div id="tab4" class="tab-content"></div>
 
+<!-- 引入 marked.js，用于解析 markdown -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 <script>
-// Markdown 文件路径，对应英文文件名
-const articleFiles = {
-  tab1: 'articles/About.md',
-  tab2: 'articles/Demo.md',
-  tab3: 'articles/Share.md',
-  tab4: 'articles/Recommend.md'
-};
-
-// 加载 Markdown 内容
-function loadMarkdown(tabId){
-  const file = articleFiles[tabId];
-  if(!file) return;
-  fetch(file)
-    .then(res => res.text())
-    .then(md => {
-      document.getElementById(tabId).innerHTML = marked.parse(md);
-    });
-}
-
-// 页面加载时默认加载第一个栏目
-loadMarkdown('tab1');
-
-// tab切换逻辑 + 展开/收起
+// tab切换逻辑 + 点击展开/收起
 const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
+
 buttons.forEach(btn => {
   btn.addEventListener('click', () => {
     const tabId = btn.getAttribute('data-tab');
-    const content = document.getElementById(tabId);
-    content.classList.toggle('active'); // 点击展开/收起
+    contents.forEach(c => {
+      if(c.id === tabId){
+        c.classList.toggle('active'); // 点击自己展开/收起
+      } else {
+        c.classList.remove('active'); // 其他收起
+      }
+    });
     buttons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+
     loadMarkdown(tabId);
   });
 });
@@ -173,6 +163,31 @@ function createSnow(){
   setTimeout(()=>snow.remove(), duration*1000);
 }
 setInterval(createSnow, 150);
+
+// 加载 Markdown 文件
+function loadMarkdown(tabId){
+  const mdFiles = {
+    tab1: "About.md",
+    tab2: "Demo.md",
+    tab3: "Share.md",
+    tab4: "Recommend.md"
+  };
+  const url = mdFiles[tabId];
+  if(!url) return;
+
+  fetch(url)
+    .then(res => res.text())
+    .then(md => {
+      const html = marked.parse(md);
+      document.getElementById(tabId).innerHTML = html;
+    })
+    .catch(err => {
+      document.getElementById(tabId).innerHTML = "<p>加载失败……</p>";
+    });
+}
+
+// 页面初始加载默认 About
+loadMarkdown('tab1');
 </script>
 
 </body>
