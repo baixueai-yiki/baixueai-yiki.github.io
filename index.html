@@ -128,24 +128,33 @@ animation: snowfall linear forwards;
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
-// tab切换逻辑 + 点击展开/收起
+// tab切换逻辑
 const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
+
+const loadedTabs = {};
+
+function openTab(tabId){
+
+  contents.forEach(c => c.classList.remove('active'));
+  buttons.forEach(b => b.classList.remove('active'));
+
+  document.getElementById(tabId).classList.add('active');
+  document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+
+  if(!loadedTabs[tabId]){
+    loadMarkdown(tabId);
+    loadedTabs[tabId] = true;
+  }
+
+  // 更新URL hash
+  location.hash = tabId;
+}
 
 buttons.forEach(btn => {
   btn.addEventListener('click', () => {
     const tabId = btn.getAttribute('data-tab');
-    contents.forEach(c => {
-      if(c.id === tabId){
-        c.classList.toggle('active'); // 点击自己展开/收起
-      } else {
-        c.classList.remove('active'); // 其他收起
-      }
-    });
-    buttons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    loadMarkdown(tabId);
+    openTab(tabId);
   });
 });
 
@@ -166,12 +175,14 @@ setInterval(createSnow, 150);
 
 // 加载 Markdown 文件
 function loadMarkdown(tabId){
+
   const mdFiles = {
-    tab1: "About.md",
-    tab2: "Demo.md",
-    tab3: "Share.md",
-    tab4: "Recommend.md"
+    tab1: "articles/About.md",
+    tab2: "articles/Demo.md",
+    tab3: "articles/Share.md",
+    tab4: "articles/Recommend.md"
   };
+
   const url = mdFiles[tabId];
   if(!url) return;
 
@@ -186,8 +197,15 @@ function loadMarkdown(tabId){
     });
 }
 
-// 页面初始加载默认 About
-loadMarkdown('tab1');
+// 页面加载时根据URL hash 打开栏目
+const hash = location.hash.replace("#","");
+
+if(hash && document.getElementById(hash)){
+  openTab(hash);
+}else{
+  openTab("tab1");
+}
+
 </script>
 
 </body>
