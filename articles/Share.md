@@ -10,7 +10,7 @@
 <br>5.创建一个index.html文件，在里面编辑页面
 <br>6.地址为https://<git用户名>.github.io
 <br>剩下的界面优化自由发挥，不会的可以问ai
-<br>[也可以下载我的，记得上传到自己的库里](https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/index.html?raw=true)
+<br><a href="https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/index.html?raw=true" target="_blank">也可以下载我的，记得上传到自己的库里</a>
 </details>
 
 # 2.晴小姐陪伴系统  
