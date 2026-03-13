@@ -8,8 +8,8 @@
 bilibili：https://space.bilibili.com/760048  
 
 <div style="display: flex; gap: 10px;">
-  <img src="/Content/Images/qing.png" alt="晴小姐图1" style="flex: 1; width: 100%; height: auto;">
-  <img src="/Content/Images/qing.jpg" alt="晴小姐图2" style="flex: 1; width: 100%; height: auto;">
+  <img src="/Content/Images/qing.png" alt="晴小姐图1" style="flex: 1; width: 50%; height: auto;">
+  <img src="/Content/Images/qing.jpg" alt="晴小姐图2" style="flex: 1; width: 50%; height: auto;">
 </div>
 
 **脚本作者**：青音连旭  
