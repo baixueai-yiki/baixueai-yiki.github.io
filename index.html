@@ -3,241 +3,180 @@
 <head>
 <meta charset="UTF-8">
 <title>萝卜的博客</title>
-
 <style>
-
-body{
-  font-family:'Segoe UI',sans-serif;
-  margin:0;
-  background-color:#f5f5f5;
-}
-
-/* 页面背景 */
-.page-background{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background-image:url('Content/Images/bg.png');
-  background-size:cover;
-  background-position:top;
-  z-index:-2;
-}
+body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5; }
 
 /* 顶图 */
-.top-banner{
-  width:100%;
-  height:350px;
-  background-image:url('Content/Images/mother.png');
-  background-size:cover;
-  background-position:top center;
-  position:relative;
-  box-shadow:inset 0 0 50px rgba(0,0,0,0.3);
+.top-banner {
+  width: 100%;
+  height: 350px;
+  background-image: url('Content/Images/mother.png');
+  background-size: cover;
+  background-position: top center;
+  position: relative;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
+  z-index: 3;
 }
 
-/* 按钮栏 */
-.tab-header{
-  display:flex;
-  justify-content:space-around;
-  position:absolute;
-  bottom:-20px;
-  width:100%;
+/* 横栏按钮容器 */
+.tab-header {
+  display: flex;
+  justify-content: space-around;
+  position: absolute;
+  bottom: -4px;
+  width: 100%;
+  padding: 0 0px;
+  z-index: 4; /* 确保按钮在顶图上方 */
 }
 
-/* 按钮 */
-.tab-header button{
-  flex:1;
-  margin:0 10px;
-  padding:15px;
-  border:2px solid #ccc;
-  border-radius:25px;
-  background-color:rgba(255,255,255,0.35);
-  backdrop-filter:blur(6px);
-  font-size:18px;
-  font-weight:500;
-  cursor:pointer;
-  transition:all 0.25s;
+/* 按钮样式 */
+.tab-header button {
+  flex: 1;
+  margin: 0 10px;
+  padding: 15px;
+  border: 2px solid #ccc;
+  border-radius: 25px;
+  background-color: rgba(255,255,255,0.3);
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease; /* 仅按钮动画 */
 }
 
 /* hover */
-.tab-header button:hover{
-  transform:translateY(-2px);
-  background-color:rgba(255,255,255,0.2);
-  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+.tab-header button:hover {
+  background-color: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 /* 当前选中 */
-.tab-header button.active{
-  background-color:rgba(255,255,255,0.6);
-  border-bottom-left-radius:0;
-  border-bottom-right-radius:0;
+.tab-header button.active {
+  background-color: rgba(255,255,255,0.5);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
 }
 
 /* 内容区 */
-.content-area{
-  padding-top:40px;
+.tab-content {
+  display: none;
+  position: relative;
+  z-index: 5; /* 在背景图上方 */
+  padding: 25px;
+  margin: 0 20px -20px 20px; /* 与背景图紧密衔接 */
+  border-radius: 0 0 20px 20px;
+  background-color: rgba(255,255,255,0.85); /* 半透明，让背景可隐约透出 */
+  border: 2px solid #ccc;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.tab-content.active {
+  display: block; /* 展开显示 */
 }
 
-.tab-content{
-  display:none;
-  margin:0 20px 20px 20px;
-  padding:25px;
-  border-radius:0 0 20px 20px;
-  background-color:rgba(255,255,255,0.88);
-  border:2px solid #ccc;
-  box-shadow:0 4px 12px rgba(0,0,0,0.1);
-  position:relative;
-  z-index:5;
+/* 内容区后面的背景图 */
+.content-background {
+  position: absolute;
+  top: 350px; 
+  left: 0;
+  width: 100%;
+  height: 2000px;
+  background-image: url('Content/Images/bg.png');
+  background-size: cover;
+  background-position: top;
+  z-index: 0;
 }
 
-.tab-content.active{
-  display:block;
-}
-
-/* ❄雪花 */
+/* ❄ 雪花 */
 .snowflake{
-  position:fixed;
-  top:-10px;
-  color:white;
-  pointer-events:none;
-  user-select:none;
-  z-index:0;
-  animation:snowfall linear forwards;
+  position: fixed;
+  top: -10px;
+  color: white;
+  pointer-events: none;
+  user-select: none;
+  z-index: 6;
+  animation: snowfall linear forwards;
 }
 
-/* 下落 + 漂移 */
-@keyframes snowfall{
-  0%{
-    transform:translateX(0px) translateY(0px) rotate(0deg);
-    opacity:1;
-  }
-  50%{
-    transform:translateX(20px) translateY(50vh) rotate(180deg);
-  }
-  100%{
-    transform:translateX(-20px) translateY(100vh) rotate(360deg);
-    opacity:0;
-  }
+@keyframes snowfall {
+  0% { transform: translateX(0px) translateY(0px) rotate(0deg); opacity:1; }
+  50% { transform: translateX(20px) translateY(50vh) rotate(180deg); }
+  100% { transform: translateX(-20px) translateY(100vh) rotate(360deg); opacity:0; }
 }
-
 </style>
 </head>
-
 <body>
 
-<div class="page-background"></div>
-
+<!-- 顶图 -->
 <div class="top-banner">
-<div class="tab-header">
-<button class="tab-btn active" data-tab="tab1">介绍</button>
-<button class="tab-btn" data-tab="tab2">测试</button>
-<button class="tab-btn" data-tab="tab3">分享</button>
-<button class="tab-btn" data-tab="tab4">收藏</button>
-</div>
+  <!-- 按钮悬浮在顶图底侧 -->
+  <div class="tab-header">
+    <button class="tab-btn active" data-tab="tab1">介绍</button>
+    <button class="tab-btn" data-tab="tab2">测试</button>
+    <button class="tab-btn" data-tab="tab3">分享</button>
+    <button class="tab-btn" data-tab="tab4">收藏</button>
+  </div>
 </div>
 
-<div class="content-area">
-
+<!-- 内容区 -->
 <div id="tab1" class="tab-content active">
-<p>
-白雪是世界上最可爱的小女孩，她的皮肤如雪般白哲，嘴唇就像苹果一样红、心同那黑檀木似的黑。
-</p>
+  <p>白雪是世界上最可爱的小女孩，她的皮肤如雪般白哲，嘴唇就像苹果一样红、心同那黑檀木似的黑。</p>
 </div>
-
 <div id="tab2" class="tab-content">
-<p>栏目二内容。</p>
+  <p>栏目二内容。</p>
 </div>
-
 <div id="tab3" class="tab-content">
-<p>
-
-这里有一个经我修改的同人小脚本，放在这里方便传播：
-
-<br><br>
-
-<a href="https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/share/晴小姐陪伴系统3.0改.zip?raw=true" download>
-晴小姐陪伴系统3.0改
-</a>
-
-<br><br>
-
-原著《爱之巢》  
-原著作者莲花池池  
-bilibili：https://space.bilibili.com/760048  
-
-<br>
-
-脚本作者青音连旭  
-视频：https://www.bilibili.com/video/BV1TAhoziEmF
-
-</p>
+  <p>
+    这里有一个经我修改的同人小脚本，放在这里方便传播：
+    <a href="https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/share/晴小姐陪伴系统3.0改.zip?raw=true" download>
+      晴小姐陪伴系统3.0改
+    </a>
+    <br>原著《爱之巢》，原著作者莲花池池，bilibili：https://space.bilibili.com/760048
+    <br>脚本作者青音连旭，视频：https://www.bilibili.com/video/BV1TAhoziEmF
+  </p>
 </div>
-
 <div id="tab4" class="tab-content">
-<p>栏目四内容。</p>
+  <p>栏目四内容。</p>
 </div>
 
-</div>
+<!-- 内容区后面的背景图 -->
+<div class="content-background"></div>
 
 <script>
+// tab切换逻辑
+const buttons = document.querySelectorAll('.tab-btn');
+const contents = document.querySelectorAll('.tab-content');
 
-/* tab切换 */
-
-const buttons=document.querySelectorAll('.tab-btn');
-const contents=document.querySelectorAll('.tab-content');
-
-buttons.forEach(btn=>{
-btn.addEventListener('click',()=>{
-const tabId=btn.getAttribute('data-tab');
-
-contents.forEach(c=>{
-if(c.id===tabId){
-c.classList.toggle('active');
-}else{
-c.classList.remove('active');
-}
+buttons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabId = btn.getAttribute('data-tab');
+    contents.forEach(c => {
+      if(c.id === tabId){
+        c.classList.toggle('active'); // 点击展开/收起
+      } else {
+        c.classList.remove('active'); // 其他隐藏
+      }
+    });
+    // 按钮高亮
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
 });
 
-buttons.forEach(b=>b.classList.remove('active'));
-btn.classList.add('active');
-
-});
-});
-
-
-/* ❄二次元下雪 */
-
+// ❄ 二次元下雪特效
 function createSnow(){
-
-const snow=document.createElement("div");
-snow.classList.add("snowflake");
-
-snow.innerText="❄";
-
-snow.style.left=Math.random()*100+"vw";
-
-/* 大小随机 */
-snow.style.fontSize=(Math.random()*12+8)+"px";
-
-/* 透明度随机 */
-snow.style.opacity=Math.random();
-
-/* 下落速度随机 */
-const duration=Math.random()*6+6;
-snow.style.animationDuration=duration+"s";
-
-document.body.appendChild(snow);
-
-setTimeout(()=>{
-snow.remove();
-},duration*1000);
-
+  const snow = document.createElement("div");
+  snow.classList.add("snowflake");
+  snow.innerText = "❄";
+  snow.style.left = Math.random() * 100 + "vw";
+  snow.style.fontSize = (Math.random() * 12 + 8) + "px";
+  snow.style.opacity = Math.random();
+  const duration = Math.random() * 6 + 6;
+  snow.style.animationDuration = duration + "s";
+  document.body.appendChild(snow);
+  setTimeout(()=>snow.remove(), duration*1000);
 }
-
-/* 生成雪花 */
-setInterval(createSnow,150);
-
+setInterval(createSnow, 150);
 </script>
 
 </body>
