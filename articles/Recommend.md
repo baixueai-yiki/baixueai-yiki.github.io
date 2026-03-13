@@ -27,4 +27,10 @@
 <details>
   <summary>展开</summary>
 这是一个我非常喜欢的地形建模软件，主要是做地形高度图用的
-<br>
+<br>你可以模拟风化、水蚀等自然演变效果
+<br>也可以手动创建水体和山体，自己手动捏出想要的地形
+<br>或者你还可以导入一张灰度图，像我这样直接用地理题上的插图改一个地形模型出来
+<br>官方地址：https://www.world-machine.com
+<div style="display: flex; gap: 10px;">
+  <img src="/Content/Images/WorldMachine.png" alt="WorldMachine" style="width: 50%; height: auto;">
+</div>  
