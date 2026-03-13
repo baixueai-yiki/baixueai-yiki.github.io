@@ -1,8 +1,6 @@
 # 1.如何在git上挂一个博客（手机可用）    
 <details>
-  <summary style="display: flex; justify-content: space-between; align-items: center;">
-    展开 <span style="transition: transform 0.2s;" class="arrow">▶</span>
-  </summary>
+  <summary>展开</summary>
 官方教程：https://docs.github.com/en/pages/quickstart  
 1.在git创建一个新的库，库的名字为：<git用户名>.github.io  
 创建时勾选添加 README（添加自述文件）  
@@ -17,9 +15,7 @@
 
 # 2.晴小姐陪伴系统  
 <details>
-  <summary style="display: flex; justify-content: space-between; align-items: center;">
-    展开 <span style="transition: transform 0.2s;" class="arrow">▶</span>
-  </summary>
+  <summary>展开</summary>
 这里有一个我用ai修改的同人小脚本，放在这里方便传播：  
 [晴小姐陪伴系统3.0改](https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/share/晴小姐陪伴系统3.0改.zip?raw=true)  
 **原著**：《爱之巢》  
@@ -32,17 +28,3 @@ bilibili：https://space.bilibili.com/760048
 **脚本作者**：青音连旭  
 视频：https://www.bilibili.com/video/BV1TAhoziEmF  
 </details>
-
-<script>
-// 自动旋转箭头
-document.querySelectorAll('details').forEach(d => {
-  const arrow = d.querySelector('.arrow');
-  d.addEventListener('toggle', () => {
-    if(d.open){
-      arrow.style.transform = 'rotate(90deg)';
-    } else {
-      arrow.style.transform = 'rotate(0deg)';
-    }
-  });
-});
-</script>
