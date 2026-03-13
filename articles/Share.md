@@ -1,5 +1,6 @@
-# 1.如何在git上挂一个博客（手机可用）  <details>
-  <summary>展开</summary>
+# 1.如何在git上挂一个博客（手机可用）    <summary>展开</summary>
+<details>
+
 
 官方教程：https://docs.github.com/en/pages/quickstart  
 1.在git创建一个新的库，库的名字为：<git用户名>.github.io
