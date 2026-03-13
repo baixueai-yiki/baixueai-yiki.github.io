@@ -1,7 +1,7 @@
 # 1.微软云盘OneDrive
 <details>
   <summary>展开</summary>
-<br>不知道为什么很多人吐槽OneDrive很讨厌，我是感觉超方便的啊  
+不知道为什么很多人吐槽OneDrive很讨厌，我是感觉超方便的啊  
 <br>你可以在电脑上创建一个他自己的文件夹（图1）你还可以把Billfish的库也创建在这里  
 <br>然后你在电脑上进行的任何操作（添加、删除、移动）他都会同步到云端
 <br>你甚至可以在手机的OneDrive软件上下载到你电脑上的这些东西（图2）
@@ -15,4 +15,10 @@
 # 2.微软笔记本OneNote
 <details>
   <summary>展开</summary>
-<br>
+这是个和微软云盘OneDrive很像的东西，不同的是OneNote以存储文本为主
+<br>同样的实时同步，同样的手机与电脑互通
+
+<div style="display: flex; gap: 10px;">
+  <img src="/Content/Images/OneNote.png" alt="OneNote1" style="width: 50%; height: auto;">
+  <img src="/Content/Images/OneNote.jpg" alt="OneNote2" style="width: 50%; height: auto;">
+</div>  
