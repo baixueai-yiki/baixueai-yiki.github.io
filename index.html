@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>白雪的小站</title>
+<link rel="stylesheet" href="styles/main.css">
+<title>鐧介洩鐨勫皬绔?/title>
 <style>
-/* --- 你的原有样式保持不变 --- */
+/* --- 浣犵殑鍘熸湁鏍峰紡淇濇寔涓嶅彉 --- */
 body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5; }  
 .top-banner { width:100%; height:350px; background-size:cover; background-position:top center; position:relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); z-index:3; }
 .tab-header { display:flex; justify-content:space-around; position:absolute; bottom:-4px; width:100%; z-index:4; }
@@ -24,14 +25,14 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 
 <div class="top-banner">
   <div class="tab-header">
-    <button class="tab-btn active" data-tab="tab1">关于</button>
-    <button class="tab-btn" data-tab="tab2">测试</button>
-    <button class="tab-btn" data-tab="tab3">分享</button>
-    <button class="tab-btn" data-tab="tab4">安利</button>
+    <button class="tab-btn active" data-tab="tab1">鍏充簬</button>
+    <button class="tab-btn" data-tab="tab2">娴嬭瘯</button>
+    <button class="tab-btn" data-tab="tab3">鍒嗕韩</button>
+    <button class="tab-btn" data-tab="tab4">瀹夊埄</button>
   </div>
 </div>
 
-<!-- 内容区容器 -->
+<!-- 鍐呭鍖哄鍣?-->
 <div id="tab1" class="tab-content"></div>
 <div id="tab2" class="tab-content"></div>
 <div id="tab3" class="tab-content"></div>
@@ -57,11 +58,11 @@ if (banner && headerImages.length > 0) {
   banner.style.backgroundImage = `url('${pick}')`;
 }
 
-// ❄ 下雪效果
-function createSnow(){const snow=document.createElement("div");snow.classList.add("snowflake");snow.innerText="❄";snow.style.left=Math.random()*100+"vw";snow.style.fontSize=(Math.random()*12+8)+"px";snow.style.opacity=Math.random();const duration=Math.random()*6+6;snow.style.animationDuration=duration+"s";document.body.appendChild(snow);setTimeout(()=>snow.remove(),duration*1000);}
+// 鉂?涓嬮洩鏁堟灉
+function createSnow(){const snow=document.createElement("div");snow.classList.add("snowflake");snow.innerText="鉂?;snow.style.left=Math.random()*100+"vw";snow.style.fontSize=(Math.random()*12+8)+"px";snow.style.opacity=Math.random();const duration=Math.random()*6+6;snow.style.animationDuration=duration+"s";document.body.appendChild(snow);setTimeout(()=>snow.remove(),duration*1000);}
 setInterval(createSnow,150);
 
-// tab切换
+// tab鍒囨崲
 const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 const loadedTabs = {};
@@ -72,7 +73,7 @@ function openTab(tabId){
   document.getElementById(tabId).classList.add('active');
   document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
 
-  // 如果没加载过就 fetch 对应 HTML
+  // 濡傛灉娌″姞杞借繃灏?fetch 瀵瑰簲 HTML
   if(!loadedTabs[tabId]){
     loadTabHTML(tabId);
     loadedTabs[tabId] = true;
@@ -95,13 +96,14 @@ function loadTabHTML(tabId){
   fetch(url)
     .then(res=>res.text())
     .then(html=>{ document.getElementById(tabId).innerHTML = html; })
-    .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
+    .catch(err=>{ document.getElementById(tabId).innerHTML="<p>鍔犺浇澶辫触鈥︹€?/p>"; });
 }
 
-// 页面加载时打开 hash 对应 tab
+// 椤甸潰鍔犺浇鏃舵墦寮€ hash 瀵瑰簲 tab
 const hash = location.hash.replace("#","");
 if(hash && document.getElementById(hash)){ openTab(hash); } else { openTab("tab1"); }
 </script>
 
 </body>
 </html>
+
