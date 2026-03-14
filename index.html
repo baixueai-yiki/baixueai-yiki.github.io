@@ -38,6 +38,25 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 <div id="tab4" class="tab-content"></div>
 
 <script>
+// Random header image on each refresh
+const headerImages = [
+  "Content/Images/header-image-1.png",
+  "Content/Images/header-image-2.png",
+  "Content/Images/header-image-3.png",
+  "Content/Images/header-image-4.png",
+  "Content/Images/header-image-5.png",
+  "Content/Images/header-image-6.png",
+  "Content/Images/header-image-7.png",
+  "Content/Images/header-image-8.png",
+  "Content/Images/header-image-9.png",
+  "Content/Images/header-image-10.png"
+];
+const banner = document.querySelector(".top-banner");
+if (banner && headerImages.length > 0) {
+  const pick = headerImages[Math.floor(Math.random() * headerImages.length)];
+  banner.style.backgroundImage = `url('${pick}')`;
+}
+
 // ❄ 下雪效果
 function createSnow(){const snow=document.createElement("div");snow.classList.add("snowflake");snow.innerText="❄";snow.style.left=Math.random()*100+"vw";snow.style.fontSize=(Math.random()*12+8)+"px";snow.style.opacity=Math.random();const duration=Math.random()*6+6;snow.style.animationDuration=duration+"s";document.body.appendChild(snow);setTimeout(()=>snow.remove(),duration*1000);}
 setInterval(createSnow,150);
