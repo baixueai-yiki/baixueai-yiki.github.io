@@ -45,14 +45,14 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 .sidebar.show { right: 0; }
 
 .sidebar::before {
-  content: "⮞";            /* 箭头字符 */
+  content: "⮞";
   position: absolute;
   left: -20px;
-  top: 10%;                /* 原来 50%，往上移动一点 */
+  top: 35%;       /* 箭头上移 */
   transform: translateY(-50%);
   font-size: 18px;
-  color: #ffffff;          /* 改成蓝色 */
-} 
+  color: #ffffff; /* 白色箭头 */
+}
 .sidebar.show::before { display: none; }
 
 .sidebar div { 
@@ -179,34 +179,26 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成目录
+// 生成目录，包括外层折叠和内层折叠
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
-  // 保留回到顶部
   toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
-
   const tabContent = document.getElementById(tabId);
   setTimeout(()=>{
-    const summaries = tabContent.querySelectorAll('.article-section details summary');
-    summaries.forEach((summary)=>{
+    const summaries = tabContent.querySelectorAll('details summary');
+    summaries.forEach(summary=>{
       const li = document.createElement('li');
       const a = document.createElement('a');
-      a.href="javascript:void(0)";
+      a.href = "javascript:void(0)";
       a.textContent = summary.parentElement.getAttribute('data-toc') || summary.textContent;
-      a.addEventListener('click',()=>{
+      a.addEventListener('click', ()=>{
         const details = summary.parentElement;
-
-        // 展开目标折叠栏本身
         details.open = true;
-
-        // 自动展开所有父级折叠栏
         let parent = details.parentElement;
         while(parent){
           if(parent.tagName==='DETAILS') parent.open = true;
           parent = parent.parentElement;
         }
-
-        // 平滑滚动到目标
         const rect = details.getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
