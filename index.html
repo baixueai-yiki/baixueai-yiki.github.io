@@ -105,7 +105,10 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 
 <div class="sidebar">
   <div>目录</div>
-  <ul id="toc"></ul>
+  <ul id="toc">
+    <li><a href="javascript:void(0)" id="back-to-top">⬆ 回到顶部</a></li>
+    <!-- 其他条目由 JS 动态生成 -->
+  </ul>
 </div>
 
 <div id="tab1" class="tab-content"></div>
@@ -129,6 +132,7 @@ function createSnow(){
 }
 setInterval(createSnow,150);
 
+// tab 切换
 const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 const loadedTabs = {};
@@ -179,7 +183,9 @@ function loadTabHTML(tabId){
 // 生成目录
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
-  toc.innerHTML="";
+  // 保留回到顶部
+  toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
+
   const tabContent = document.getElementById(tabId);
   setTimeout(()=>{
     const summaries = tabContent.querySelectorAll('.article-section details summary');
@@ -205,7 +211,12 @@ function generateSidebarTOC(tabId){
 const hash = location.hash.replace("#","");
 if(hash && document.getElementById(hash)){ openTab(hash); } else { openTab("tab1"); }
 
-// 右侧隐藏式目录鼠标悬停逻辑
+// 回到顶部事件
+document.getElementById('back-to-top').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// 右侧目录悬停逻辑
 const sidebar = document.querySelector('.sidebar');
 let hideTimeout = null;
 let hoveringSidebar = false;
