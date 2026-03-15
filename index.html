@@ -199,16 +199,19 @@ function generateSidebarTOC(tabId){
 
         const summaryText = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
 
+        // 父项目 a
         const summaryBtn = document.createElement('a');
         summaryBtn.href = 'javascript:void(0)';
         summaryBtn.textContent = summaryText;
         summaryBtn.style.fontWeight = 'bold';
 
+        // 点击父项目只展开折叠
         summaryBtn.addEventListener('click', ()=>{
           details.open = !details.open;
         });
         li.appendChild(summaryBtn);
 
+        // 查找直接子 details
         const childDetails = details.querySelectorAll(':scope > details[data-toc]');
         if(childDetails.length){
           const subUl = document.createElement('ul');
@@ -220,6 +223,7 @@ function generateSidebarTOC(tabId){
             subA.href="javascript:void(0)";
             subA.textContent = subText;
 
+            // 点击子项目滚动到对应内容
             subA.addEventListener('click',()=>{
               child.open = true;
               let parent = child.parentElement;
@@ -243,7 +247,6 @@ function generateSidebarTOC(tabId){
 
     const topLevelDetails = tabContent.querySelectorAll(':scope > details[data-toc]');
     toc.appendChild(createTOC(topLevelDetails));
-
   },100);
 }
 
