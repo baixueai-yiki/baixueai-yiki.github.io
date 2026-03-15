@@ -6,7 +6,7 @@
 <link rel="icon" href="Content/Icon/carrot.png">
 <title>白雪的小站</title>
 <style>
-/* --- 你的原有样式保持不变 --- */
+/* --- 原有样式保持不变 --- */
 body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5; }  
 .top-banner { width:100%; height:350px; background-size:cover; background-position:top center; position:relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); z-index:3; }
 .tab-header { display:flex; justify-content:space-around; position:absolute; bottom:-4px; width:100%; z-index:4; }
@@ -19,6 +19,23 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 .content-background { position:fixed; top:0; left:0; width:100%; height:100%; background-image:url('Content/Images/bg.png'); background-size:cover; background-position:top; z-index:-1;}
 .snowflake{position:fixed; top:-10px; color:white; pointer-events:none; user-select:none; z-index:6; animation:snowfall linear forwards;}
 @keyframes snowfall {0% { transform:translateX(0px) translateY(0px) rotate(0deg); opacity:1;} 50% { transform:translateX(20px) translateY(50vh) rotate(180deg);} 100% { transform:translateX(-20px) translateY(100vh) rotate(360deg); opacity:0;}}
+
+/* --- 新增右侧悬浮目录样式 --- */
+.sidebar {
+  position: fixed;
+  top: 150px; /* 可以根据需要调整 */
+  right: 0;
+  width: 140px;
+  padding: 10px;
+  background: rgba(245,245,245,0.9);
+  border-left:1px solid #ddd;
+  z-index: 10;
+}
+.sidebar div { font-weight:bold; margin-bottom:10px; font-size:16px; }
+.sidebar ul { padding-left:0; margin:0; list-style:none; }
+.sidebar ul li { margin-bottom:8px; }
+.sidebar ul li a { cursor:pointer; color:#333; text-decoration:none; }
+.sidebar ul li a:hover { color:#0078D7; }
 </style>
 </head>
 <body>
@@ -34,6 +51,12 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   </div>
 </div>
 
+<!-- 右侧悬浮目录 -->
+<div class="sidebar">
+  <div>目录</div>
+  <ul id="toc"></ul>
+</div>
+
 <!-- 内容区容器 -->
 <div id="tab1" class="tab-content"></div>
 <div id="tab2" class="tab-content"></div>
@@ -42,7 +65,18 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 
 <script>
 // ❄ 下雪效果
-function createSnow(){const snow=document.createElement("div");snow.classList.add("snowflake");snow.innerText="❄";snow.style.left=Math.random()*100+"vw";snow.style.fontSize=(Math.random()*12+8)+"px";snow.style.opacity=Math.random();const duration=Math.random()*6+6;snow.style.animationDuration=duration+"s";document.body.appendChild(snow);setTimeout(()=>snow.remove(),duration*1000);}
+function createSnow(){
+  const snow=document.createElement("div");
+  snow.classList.add("snowflake");
+  snow.innerText="❄";
+  snow.style.left=Math.random()*100+"vw";
+  snow.style.fontSize=(Math.random()*12+8)+"px";
+  snow.style.opacity=Math.random();
+  const duration=Math.random()*6+6;
+  snow.style.animationDuration=duration+"s";
+  document.body.appendChild(snow);
+  setTimeout(()=>snow.remove(),duration*1000);
+}
 setInterval(createSnow,150);
 
 // tab切换
@@ -52,16 +86,11 @@ const loadedTabs = {};
 
 // 随机头图
 const headerImages = [
-  "Content/Images/header-image-1.png",
-  "Content/Images/header-image-2.png",
-  "Content/Images/header-image-3.png",
-  "Content/Images/header-image-4.png",
-  "Content/Images/header-image-5.png",
-  "Content/Images/header-image-6.png",
-  "Content/Images/header-image-7.png",
-  "Content/Images/header-image-8.png",
-  "Content/Images/header-image-9.png",
-  "Content/Images/header-image-10.png"
+  "Content/Images/header-image-1.png","Content/Images/header-image-2.png",
+  "Content/Images/header-image-3.png","Content/Images/header-image-4.png",
+  "Content/Images/header-image-5.png","Content/Images/header-image-6.png",
+  "Content/Images/header-image-7.png","Content/Images/header-image-8.png",
+  "Content/Images/header-image-9.png","Content/Images/header-image-10.png"
 ];
 const headerEl = document.querySelector(".top-banner");
 if(headerEl && headerImages.length){
@@ -69,22 +98,27 @@ if(headerEl && headerImages.length){
   headerEl.style.backgroundImage = `url('${headerImages[idx]}')`;
 }
 
+// 打开 tab 并加载内容
 function openTab(tabId){
   contents.forEach(c=>c.classList.remove('active'));
   buttons.forEach(b=>b.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
   document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
 
-  // 如果没加载过就 fetch 对应 HTML
   if(!loadedTabs[tabId]){
-    loadTabHTML(tabId);
+    loadTabHTML(tabId).then(()=>{ generateSidebarTOC(tabId); });
     loadedTabs[tabId] = true;
+  } else {
+    generateSidebarTOC(tabId);
   }
   location.hash = tabId;
 }
 
-buttons.forEach(btn=>btn.addEventListener('click',()=>{ openTab(btn.getAttribute('data-tab')); }));
+buttons.forEach(btn=>btn.addEventListener('click',()=>{ 
+  openTab(btn.getAttribute('data-tab')); 
+}));
 
+// 加载 tab HTML
 function loadTabHTML(tabId){
   const tabFiles = {
     tab1: "articles/About.html",
@@ -93,12 +127,38 @@ function loadTabHTML(tabId){
     tab4: "articles/Recommend.html"
   };
   const url = tabFiles[tabId];
-  if(!url) return;
+  if(!url) return Promise.resolve();
 
-  fetch(url)
+  return fetch(url)
     .then(res=>res.text())
     .then(html=>{ document.getElementById(tabId).innerHTML = html; })
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
+}
+
+// 生成右侧目录
+function generateSidebarTOC(tabId){
+  const toc = document.getElementById('toc');
+  toc.innerHTML = "";
+  const tabContent = document.getElementById(tabId);
+
+  setTimeout(()=>{
+    const summaries = tabContent.querySelectorAll('.article-section details summary');
+    summaries.forEach(summary=>{
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = "javascript:void(0)";
+      a.textContent = summary.parentElement.getAttribute('data-toc') || summary.textContent;
+      a.addEventListener('click', ()=>{
+        const details = summary.parentElement;
+        details.open = true;
+        const rect = details.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        window.scrollTo({ top: rect.top + scrollTop - 20, behavior: 'smooth' });
+      });
+      li.appendChild(a);
+      toc.appendChild(li);
+    });
+  }, 100);
 }
 
 // 页面加载时打开 hash 对应 tab
