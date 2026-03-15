@@ -142,11 +142,7 @@ function createSnow(){
 }
 setInterval(createSnow,150);
 
-// Tab 切换
-const buttons = document.querySelectorAll('.tab-btn');
-const contents = document.querySelectorAll('.tab-content');
-const loadedTabs = {};
-
+// 随机头图
 const headerImages = [
   "Content/Images/header-image-1.png","Content/Images/header-image-2.png",
   "Content/Images/header-image-3.png","Content/Images/header-image-4.png",
@@ -159,6 +155,11 @@ if(headerEl && headerImages.length){
   const idx = Math.floor(Math.random() * headerImages.length);
   headerEl.style.backgroundImage = `url('${headerImages[idx]}')`;
 }
+
+// Tab 切换
+const buttons = document.querySelectorAll('.tab-btn');
+const contents = document.querySelectorAll('.tab-content');
+const loadedTabs = {};
 
 function openTab(tabId){
   contents.forEach(c=>c.classList.remove('active'));
@@ -196,42 +197,38 @@ function generateSidebarTOC(tabId){
   const tabContent = document.getElementById(tabId);
 
   setTimeout(()=>{
-    const topLevelDetails = tabContent.querySelectorAll(':scope > details[data-toc-type="parent"]');
-    topLevelDetails.forEach(details=>{
+    const parentDetails = tabContent.querySelectorAll('details[data-toc-type="parent"]');
+    parentDetails.forEach(details=>{
       const li = document.createElement('li');
       const parentA = document.createElement('a');
       parentA.href = 'javascript:void(0)';
-      parentA.textContent = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
-      parentA.style.fontWeight = 'bold';
+      parentA.textContent = details.getAttribute('data-toc');
+      parentA.style.fontWeight='bold';
       li.appendChild(parentA);
 
-      const childDetails = details.querySelectorAll(':scope > .article-section > details[data-toc-type="child"]');
-      if(childDetails.length){
+      // 生成子列表
+      const children = details.querySelectorAll('details[data-toc-type="child"]');
+      if(children.length){
         const subUl = document.createElement('ul');
-        subUl.style.display = 'none';
-        childDetails.forEach(child=>{
+        children.forEach(child=>{
           const subLi = document.createElement('li');
           const subA = document.createElement('a');
-          subA.href = 'javascript:void(0)';
-          subA.textContent = child.getAttribute('data-toc') || child.querySelector('summary').textContent;
-          subA.addEventListener('click', ()=>{
-            // 展开父项和子项
-            details.open = true;
-            child.open = true;
-            const rect = child.getBoundingClientRect();
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
+          subA.href='javascript:void(0)';
+          subA.textContent=child.getAttribute('data-toc');
+          subA.addEventListener('click',()=>{
+            if(!child.open) child.open = true;
+            child.scrollIntoView({behavior:'smooth', block:'start'});
           });
           subLi.appendChild(subA);
           subUl.appendChild(subLi);
         });
         li.appendChild(subUl);
-        parentA.addEventListener('click', ()=>{ subUl.classList.toggle('expanded'); });
+        parentA.addEventListener('click',()=>{ subUl.classList.toggle('expanded'); });
       }
 
       toc.appendChild(li);
     });
-  }, 100);
+  },100);
 }
 
 // 初始打开 Tab
