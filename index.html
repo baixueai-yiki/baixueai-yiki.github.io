@@ -27,7 +27,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 .snowflake{position:fixed; top:-10px; color:white; pointer-events:none; user-select:none; z-index:6; animation:snowfall linear forwards;}
 @keyframes snowfall {0% { transform:translateX(0px) translateY(0px) rotate(0deg); opacity:1;} 50% { transform:translateX(20px) translateY(50vh) rotate(180deg);} 100% { transform:translateX(-20px) translateY(100vh) rotate(360deg); opacity:0;}}
 
-/* 隐藏式右侧目录 */
+/* 隐藏式右侧目录带箭头 */
 .sidebar { 
   position: fixed; 
   top: 350px; 
@@ -40,8 +40,26 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   box-sizing:border-box; 
   transition: right 0.3s ease;
 }
+
+/* 鼠标靠近或 hover 时滑出 */
 .sidebar:hover { 
-  right: 0; /* 滑出 */
+  right: 0;
+}
+
+/* 右侧小箭头提示 */
+.sidebar::before {
+  content: "⮞";
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #0078D7;
+}
+
+/* 当滑出后隐藏箭头 */
+.sidebar:hover::before {
+  display: none;
 }
 
 .sidebar div { 
