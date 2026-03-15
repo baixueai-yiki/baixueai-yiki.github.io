@@ -1,90 +1,48 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="Content/Icon/carrot.png">
-<title>白雪的小站</title>
-<style>
-/* --- 原有样式保持不变 --- */
-body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5; }  
-.top-banner { width:100%; height:350px; background-size:cover; background-position:top center; position:relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); z-index:3; }
-.tab-header { display:flex; justify-content:space-around; position:absolute; bottom:-4px; width:100%; z-index:4; }
-.tab-header button { flex:1; margin:0 10px; padding:15px; border:2px solid #ccc; border-radius:25px; background-color:rgba(255,255,255,0.3); font-size:18px; font-weight:500; cursor:pointer; transition:all 0.3s ease; }
-.tab-header button:hover { background-color:rgba(255,255,255,0.1); transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.2);}
-.tab-header button.active { background-color:rgba(255,255,255,0.5); border-bottom-left-radius:0; border-bottom-right-radius:0; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);}
-.tab-content { display:none; position:relative; z-index:5; padding:25px; margin:0 20px -20px 20px; border-radius:0 0 20px 20px; background-color:rgba(255,255,255,0.85); border:2px solid #ccc; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-.tab-content.active { display:block;}
-.article-section { margin:20px 0; padding:18px 20px; background-color:rgba(255,255,255,0.9); border:1px solid #ddd; border-radius:16px; box-shadow:0 6px 16px rgba(0,0,0,0.08); }
-.content-background { position:fixed; top:0; left:0; width:100%; height:100%; background-image:url('Content/Images/bg.png'); background-size:cover; background-position:top; z-index:-1;}
-.snowflake{position:fixed; top:-10px; color:white; pointer-events:none; user-select:none; z-index:6; animation:snowfall linear forwards;}
-@keyframes snowfall {0% { transform:translateX(0px) translateY(0px) rotate(0deg); opacity:1;} 50% { transform:translateX(20px) translateY(50vh) rotate(180deg);} 100% { transform:translateX(-20px) translateY(100vh) rotate(360deg); opacity:0;}}
-
-/* --- 新增右侧悬浮目录样式 --- */
-.sidebar {
-  position: fixed;
-  top: 150px; /* 可以根据需要调整 */
-  right: 0;
-  width: 140px;
-  padding: 10px;
-  background: rgba(245,245,245,0.9);
-  border-left:1px solid #ddd;
-  z-index: 10;
-}
-.sidebar div { font-weight:bold; margin-bottom:10px; font-size:16px; }
-.sidebar ul { padding-left:0; margin:0; list-style:none; }
-.sidebar ul li { margin-bottom:8px; }
-.sidebar ul li a { cursor:pointer; color:#333; text-decoration:none; }
-.sidebar ul li a:hover { color:#0078D7; }
-</style>
-</head>
-<body>
-
-<div class="content-background"></div>
-
-<div class="top-banner">
-  <div class="tab-header">
-    <button class="tab-btn active" data-tab="tab1">关于</button>
-    <button class="tab-btn" data-tab="tab2">测试</button>
-    <button class="tab-btn" data-tab="tab3">分享</button>
-    <button class="tab-btn" data-tab="tab4">安利</button>
-  </div>
-</div>
-
-<!-- 右侧悬浮目录 -->
-<div class="sidebar">
-  <div>目录</div>
-  <ul id="toc"></ul>
-</div>
-
-<!-- 内容区容器 -->
-<div id="tab1" class="tab-content"></div>
-<div id="tab2" class="tab-content"></div>
-<div id="tab3" class="tab-content"></div>
-<div id="tab4" class="tab-content"></div>
-
 <script>
-// ❄ 下雪效果
-function createSnow(){
-  const snow=document.createElement("div");
-  snow.classList.add("snowflake");
-  snow.innerText="❄";
-  snow.style.left=Math.random()*100+"vw";
-  snow.style.fontSize=(Math.random()*12+8)+"px";
-  snow.style.opacity=Math.random();
-  const duration=Math.random()*6+6;
-  snow.style.animationDuration=duration+"s";
-  document.body.appendChild(snow);
-  setTimeout(()=>snow.remove(),duration*1000);
-}
-setInterval(createSnow,150);
+// ❄ 下雪效果（requestAnimationFrame）
+const snowflakes = [];
+const maxSnowflakes = 100;
 
-// tab切换
+function createSnowflake() {
+  const snow = document.createElement("div");
+  snow.classList.add("snowflake");
+  snow.innerText = "❄";
+  snow.style.left = Math.random() * 100 + "vw";
+  snow.style.fontSize = (Math.random() * 12 + 8) + "px";
+  snow.style.opacity = Math.random();
+  snow.dataset.speed = (Math.random() * 2 + 1); // 下落速度
+  snow.dataset.angle = Math.random() * Math.PI * 2; // X 摆动角度
+  snow.dataset.offset = 0;
+  document.body.appendChild(snow);
+  snowflakes.push(snow);
+}
+
+function updateSnowflakes() {
+  snowflakes.forEach((snow, i) => {
+    let top = parseFloat(snow.style.top || "-10px") + parseFloat(snow.dataset.speed);
+    snow.dataset.offset += 0.02;
+    let xOffset = Math.sin(snow.dataset.offset) * 20;
+    snow.style.transform = `translateX(${xOffset}px) rotate(${top * 3}deg)`;
+    snow.style.top = top + "px";
+
+    if (top > window.innerHeight) {
+      snow.remove();
+      snowflakes.splice(i, 1);
+      createSnowflake();
+    }
+  });
+  requestAnimationFrame(updateSnowflakes);
+}
+
+// 初始化雪花
+for (let i = 0; i < 50; i++) createSnowflake();
+updateSnowflakes();
+
+// Tab 切换逻辑保持不变
 const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 const loadedTabs = {};
 
-// 随机头图
 const headerImages = [
   "Content/Images/header-image-1.png","Content/Images/header-image-2.png",
   "Content/Images/header-image-3.png","Content/Images/header-image-4.png",
@@ -98,7 +56,6 @@ if(headerEl && headerImages.length){
   headerEl.style.backgroundImage = `url('${headerImages[idx]}')`;
 }
 
-// 打开 tab 并加载内容
 function openTab(tabId){
   contents.forEach(c=>c.classList.remove('active'));
   buttons.forEach(b=>b.classList.remove('active'));
@@ -106,7 +63,7 @@ function openTab(tabId){
   document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
 
   if(!loadedTabs[tabId]){
-    loadTabHTML(tabId).then(()=>{ generateSidebarTOC(tabId); });
+    loadTabHTML(tabId).then(()=>{ observeTOC(tabId); });
     loadedTabs[tabId] = true;
   } else {
     generateSidebarTOC(tabId);
@@ -118,14 +75,8 @@ buttons.forEach(btn=>btn.addEventListener('click',()=>{
   openTab(btn.getAttribute('data-tab')); 
 }));
 
-// 加载 tab HTML
 function loadTabHTML(tabId){
-  const tabFiles = {
-    tab1: "articles/About.html",
-    tab2: "articles/Demo.html",
-    tab3: "articles/Share.html",
-    tab4: "articles/Recommend.html"
-  };
+  const tabFiles = { tab1:"articles/About.html", tab2:"articles/Demo.html", tab3:"articles/Share.html", tab4:"articles/Recommend.html" };
   const url = tabFiles[tabId];
   if(!url) return Promise.resolve();
 
@@ -135,36 +86,38 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成右侧目录
+// MutationObserver 监听文章加载完成生成 TOC
+function observeTOC(tabId){
+  const tabContent = document.getElementById(tabId);
+  const observer = new MutationObserver(() => { generateSidebarTOC(tabId); observer.disconnect(); });
+  observer.observe(tabContent, { childList:true, subtree:true });
+}
+
+// 生成目录
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
-  toc.innerHTML = "";
+  toc.innerHTML="";
   const tabContent = document.getElementById(tabId);
-
-  setTimeout(()=>{
-    const summaries = tabContent.querySelectorAll('.article-section details summary');
-    summaries.forEach(summary=>{
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = "javascript:void(0)";
-      a.textContent = summary.parentElement.getAttribute('data-toc') || summary.textContent;
-      a.addEventListener('click', ()=>{
-        const details = summary.parentElement;
-        details.open = true;
-        const rect = details.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        window.scrollTo({ top: rect.top + scrollTop - 20, behavior: 'smooth' });
-      });
-      li.appendChild(a);
-      toc.appendChild(li);
+  const summaries = tabContent.querySelectorAll('.article-section details summary');
+  summaries.forEach((summary) => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = "javascript:void(0)";
+    a.textContent = summary.parentElement.getAttribute('data-toc') || summary.textContent;
+    a.addEventListener('click', () => {
+      const details = summary.parentElement;
+      details.open = true;
+      const rect = details.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const bannerHeight = document.querySelector('.top-banner')?.offsetHeight || 0;
+      window.scrollTo({ top: rect.top + scrollTop - bannerHeight - 10, behavior: 'smooth' });
     });
-  }, 100);
+    li.appendChild(a);
+    toc.appendChild(li);
+  });
 }
 
 // 页面加载时打开 hash 对应 tab
 const hash = location.hash.replace("#","");
 if(hash && document.getElementById(hash)){ openTab(hash); } else { openTab("tab1"); }
 </script>
-
-</body>
-</html>
