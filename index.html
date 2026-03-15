@@ -6,19 +6,46 @@
 <link rel="icon" href="Content/Icon/carrot.png">
 <title>白雪的小站</title>
 <style>
-/* --- 你的原有样式保持不变 --- */
 body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5; }  
+
 .top-banner { width:100%; height:350px; background-size:cover; background-position:top center; position:relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); z-index:3; }
+
 .tab-header { display:flex; justify-content:space-around; position:absolute; bottom:-4px; width:100%; z-index:4; }
 .tab-header button { flex:1; margin:0 10px; padding:15px; border:2px solid #ccc; border-radius:25px; background-color:rgba(255,255,255,0.3); font-size:18px; font-weight:500; cursor:pointer; transition:all 0.3s ease; }
 .tab-header button:hover { background-color:rgba(255,255,255,0.1); transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.2);}
 .tab-header button.active { background-color:rgba(255,255,255,0.5); border-bottom-left-radius:0; border-bottom-right-radius:0; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);}
+
 .tab-content { display:none; position:relative; z-index:5; padding:25px; margin:0 20px -20px 20px; border-radius:0 0 20px 20px; background-color:rgba(255,255,255,0.85); border:2px solid #ccc; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-.tab-content.active { display:block;}
+.tab-content.active { display:block; }
+
 .article-section { margin:20px 0; padding:18px 20px; background-color:rgba(255,255,255,0.9); border:1px solid #ddd; border-radius:16px; box-shadow:0 6px 16px rgba(0,0,0,0.08); }
-.content-background { position:fixed; top:0; left:0; width:100%; height:100%; background-image:url('Content/Images/bg.png'); background-size:cover; background-position:top; z-index:-1;}
+.img-row { display:flex; gap:10px; flex-wrap:wrap; }
+.img-row img { width:50%; height:auto; }
+
+.content-background { position:fixed; top:0; left:0; width:100%; height:100%; background-image:url('Content/Images/bg.png'); background-size:cover; background-position:top; z-index:-1; }
+
 .snowflake{position:fixed; top:-10px; color:white; pointer-events:none; user-select:none; z-index:6; animation:snowfall linear forwards;}
 @keyframes snowfall {0% { transform:translateX(0px) translateY(0px) rotate(0deg); opacity:1;} 50% { transform:translateX(20px) translateY(50vh) rotate(180deg);} 100% { transform:translateX(-20px) translateY(100vh) rotate(360deg); opacity:0;}}
+
+/* 右侧悬浮目录 */
+.sidebar {
+  position: fixed;
+  top: 150px;       /* 下移50px */
+  right: 0;         /* 放右边 */
+  left: auto;       
+  width: 120px;     
+  padding: 10px;
+  background: rgba(245,245,245,0.9);
+  border-left:1px solid #ddd; /* 右边放目录用左边边框 */
+  z-index: 10;
+  box-sizing:border-box;
+}
+
+.sidebar div { font-weight:bold; margin-bottom:10px; font-size:16px; }
+.sidebar ul { padding-left:0; margin:0; list-style:none; } /* 去掉小点 */
+.sidebar ul li { margin-bottom:8px; }
+.sidebar ul li a { cursor:pointer; color:#333; text-decoration:none; }
+.sidebar ul li a:hover { color:#0078D7; }
 </style>
 </head>
 <body>
@@ -34,34 +61,86 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   </div>
 </div>
 
-<!-- 内容区容器 -->
+<!-- 右侧固定目录 -->
+<div class="sidebar">
+  <div>目录</div>
+  <ul id="toc"></ul>
+</div>
+
+<!-- tab 内容 -->
 <div id="tab1" class="tab-content"></div>
 <div id="tab2" class="tab-content"></div>
 <div id="tab3" class="tab-content"></div>
-<div id="tab4" class="tab-content"></div>
+<div id="tab4" class="tab-content">
+  <!-- tab4 示例内容 -->
+  <div class="article-section">
+    <details data-toc="OneDrive">
+      <summary><strong>1.微软云盘OneDrive</strong></summary>
+      不知道为什么很多人吐槽 OneDrive 很讨厌，我是感觉超方便的啊
+      <br>你可以在电脑上创建一个他自己的文件夹（图1）你还可以把 Billfish 的库也创建在这里
+      <br>然后你在电脑上进行的任何操作（添加、删除、移动）他都会同步到云端
+      <br>你甚至可以在手机的 OneDrive 软件上下载到你电脑上的这些东西（图2）
+      <br>总之放一个官方的下载地址：<a href="https://www.microsoft.com/zh-cn/microsoft-365/onedrive/download" target="_blank">下载地址</a>
+      <div class="img-row">
+        <img src="/Content/Images/OneDrive.png" alt="OneDrive1">
+        <img src="/Content/Images/OneDrive.jpg" alt="OneDrive2">
+      </div>
+    </details>
+  </div>
+
+  <div class="article-section">
+    <details data-toc="OneNote">
+      <summary><strong>2.微软笔记OneNote</strong></summary>
+      这是个和微软云盘OneDrive 很像的东西，不同的是 OneNote 以存储文本为主
+      <br>同样的实时同步，同样的手机与电脑互通
+      <div class="img-row">
+        <img src="/Content/Images/OneNote.png" alt="OneNote1">
+        <img src="/Content/Images/OneNote.jpg" alt="OneNote2">
+      </div>
+    </details>
+  </div>
+
+  <div class="article-section">
+    <details data-toc="WorldMachine">
+      <summary><strong>3.地形建模软件WorldMachine</strong></summary>
+      这是一个我非常喜欢的地形建模软件，主要是做地形高度图用的
+      <br>你可以模拟风化、水蚀等自然演变效果
+      <br>也可以手动创建水体和山体，自己手动捏出想要的地形
+      <br>或者你还可以导入一张灰度图，像我这样直接用地理题上的插图改一个地形模型出来
+      <br>官方地址：<a href="https://www.world-machine.com" target="_blank">WorldMachine官网</a>
+      <div class="img-row">
+        <img src="/Content/Images/WorldMachine.png" alt="WorldMachine">
+      </div>
+    </details>
+  </div>
+</div>
 
 <script>
 // ❄ 下雪效果
-function createSnow(){const snow=document.createElement("div");snow.classList.add("snowflake");snow.innerText="❄";snow.style.left=Math.random()*100+"vw";snow.style.fontSize=(Math.random()*12+8)+"px";snow.style.opacity=Math.random();const duration=Math.random()*6+6;snow.style.animationDuration=duration+"s";document.body.appendChild(snow);setTimeout(()=>snow.remove(),duration*1000);}
+function createSnow(){
+  const snow=document.createElement("div");
+  snow.classList.add("snowflake");
+  snow.innerText="❄";
+  snow.style.left=Math.random()*100+"vw";
+  snow.style.fontSize=(Math.random()*12+8)+"px";
+  snow.style.opacity=Math.random();
+  const duration=Math.random()*6+6;
+  snow.style.animationDuration=duration+"s";
+  document.body.appendChild(snow);
+  setTimeout(()=>snow.remove(),duration*1000);
+}
 setInterval(createSnow,150);
 
-// tab切换
 const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 const loadedTabs = {};
 
-// 随机头图
 const headerImages = [
-  "Content/Images/header-image-1.png",
-  "Content/Images/header-image-2.png",
-  "Content/Images/header-image-3.png",
-  "Content/Images/header-image-4.png",
-  "Content/Images/header-image-5.png",
-  "Content/Images/header-image-6.png",
-  "Content/Images/header-image-7.png",
-  "Content/Images/header-image-8.png",
-  "Content/Images/header-image-9.png",
-  "Content/Images/header-image-10.png"
+  "Content/Images/header-image-1.png","Content/Images/header-image-2.png",
+  "Content/Images/header-image-3.png","Content/Images/header-image-4.png",
+  "Content/Images/header-image-5.png","Content/Images/header-image-6.png",
+  "Content/Images/header-image-7.png","Content/Images/header-image-8.png",
+  "Content/Images/header-image-9.png","Content/Images/header-image-10.png"
 ];
 const headerEl = document.querySelector(".top-banner");
 if(headerEl && headerImages.length){
@@ -75,35 +154,65 @@ function openTab(tabId){
   document.getElementById(tabId).classList.add('active');
   document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
 
-  // 如果没加载过就 fetch 对应 HTML
   if(!loadedTabs[tabId]){
-    loadTabHTML(tabId);
+    loadTabHTML(tabId).then(()=>{ generateSidebarTOC(tabId); });
     loadedTabs[tabId] = true;
+  } else {
+    generateSidebarTOC(tabId);
   }
   location.hash = tabId;
 }
 
-buttons.forEach(btn=>btn.addEventListener('click',()=>{ openTab(btn.getAttribute('data-tab')); }));
+buttons.forEach(btn=>btn.addEventListener('click',()=>{ 
+  openTab(btn.getAttribute('data-tab')); 
+}));
 
 function loadTabHTML(tabId){
-  const tabFiles = {
-    tab1: "articles/About.html",
-    tab2: "articles/Demo.html",
-    tab3: "articles/Share.html",
-    tab4: "articles/Recommend.html"
-  };
+  const tabFiles = { tab1:"articles/About.html", tab2:"articles/Demo.html", tab3:"articles/Share.html", tab4:"articles/Recommend.html" };
   const url = tabFiles[tabId];
-  if(!url) return;
+  if(!url) return Promise.resolve();
 
-  fetch(url)
+  return fetch(url)
     .then(res=>res.text())
     .then(html=>{ document.getElementById(tabId).innerHTML = html; })
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
+// 生成右侧目录
+function generateSidebarTOC(tabId){
+  const toc = document.getElementById('toc');
+  toc.innerHTML="";
+  const tabContent = document.getElementById(tabId);
+
+  setTimeout(()=>{
+    const summaries = tabContent.querySelectorAll('.article-section details summary');
+    summaries.forEach((summary) => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = "javascript:void(0)";
+      a.textContent = summary.parentElement.getAttribute('data-toc') || summary.textContent;
+
+      a.addEventListener('click', () => {
+        const details = summary.parentElement;
+        details.open = true;
+        const rect = details.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        window.scrollTo({ top: rect.top + scrollTop - 20, behavior: 'smooth' });
+      });
+
+      li.appendChild(a);
+      toc.appendChild(li);
+    });
+  }, 100);
+}
+
 // 页面加载时打开 hash 对应 tab
 const hash = location.hash.replace("#","");
-if(hash && document.getElementById(hash)){ openTab(hash); } else { openTab("tab1"); }
+if(hash && document.getElementById(hash)){ 
+  openTab(hash); 
+} else { 
+  openTab("tab1"); 
+}
 </script>
 
 </body>
