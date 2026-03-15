@@ -45,14 +45,14 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 .sidebar.show { right: 0; }
 
 .sidebar::before {
-  content: "⮞";
+  content: "⮞";            /* 箭头字符 */
   position: absolute;
   left: -20px;
-  top: 50%;
+  top: 10%;                /* 原来 50%，往上移动一点 */
   transform: translateY(-50%);
   font-size: 18px;
-  color: #0078D7;
-}
+  color: #ffffff;          /* 改成蓝色 */
+} 
 .sidebar.show::before { display: none; }
 
 .sidebar div { 
