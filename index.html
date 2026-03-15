@@ -29,18 +29,21 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 
 /* 右侧悬浮圆角目录 */
 .sidebar { 
-  position: fixed; 
-  top: 400px; 
-  right: -160px; 
-  width: 160px; 
-  padding: 10px; 
-  background: rgba(245,245,245,0.95); 
-  border-left:1px solid #ddd; 
-  z-index: 10; 
-  box-sizing:border-box; 
-  border-radius: 16px 0 0 16px;
-  box-shadow:0 6px 16px rgba(0,0,0,0.08);
-  transition: right 0.3s ease;
+  position: fixed;               /* 固定在屏幕右侧，不随滚动消失 */
+  top: 150px;                    /* 距离顶部 400px，可以调整目录竖向位置 */
+  right: -160px;                 /* 默认隐藏在屏幕右侧外侧，鼠标悬停时弹出 */
+  width: 160px;                  /* 目录宽度 */
+  padding: 10px;                 /* 内边距，让内容不紧贴边缘 */
+  background: rgba(245,245,245,0.95); /* 背景色，带透明度 */
+  border-left: 1px solid #ddd;   /* 左侧边框，让目录和内容区区分 */
+  z-index: 10;                   /* 保证目录在其他元素之上 */
+  box-sizing: border-box;        /* 包括 padding 在宽度计算里 */
+  border-radius: 16px 0 0 16px;  /* 左上和左下圆角 */
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08); /* 阴影，增加立体感 */
+  transition: right 0.3s ease;   /* 弹出/隐藏的动画效果 */
+  /* 不限制高度，不显示滚动条 */
+  /* max-height: 70vh; */
+  /* overflow-y: auto; */
 }
 .sidebar.show { right: 0; }
 
