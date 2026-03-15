@@ -31,24 +31,19 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 .sidebar { 
   position: fixed; 
   top: 350px; 
-  right: -140px; /* 初始隐藏 */
+  right: -140px; /* 初始缩回 */
   width: 140px; 
   padding: 10px; 
   background: rgba(245,245,245,0.9); 
   border-left:1px solid #ddd; 
   z-index: 10; 
   box-sizing:border-box; 
-  transition: right 0.3s ease;
-  border-radius: 16px 0 0 16px; /* 左上左下圆角 */
+  border-radius: 16px 0 0 16px;
   box-shadow:0 6px 16px rgba(0,0,0,0.08);
+  transition: right 0.3s ease;
 }
+.sidebar.show { right: 0; }
 
-/* 滑出 */
-.sidebar:hover { 
-  right: 0;
-}
-
-/* 右侧箭头提示 */
 .sidebar::before {
   content: "⮞";
   position: absolute;
@@ -58,11 +53,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   font-size: 18px;
   color: #0078D7;
 }
-
-/* 滑出后隐藏箭头 */
-.sidebar:hover::before {
-  display: none;
-}
+.sidebar.show::before { display: none; }
 
 .sidebar div { 
   font-weight:bold; 
@@ -220,6 +211,23 @@ function generateSidebarTOC(tabId){
 // 页面加载时打开 hash 对应 tab
 const hash = location.hash.replace("#","");
 if(hash && document.getElementById(hash)){ openTab(hash); } else { openTab("tab1"); }
+
+// 鼠标靠右边滑出 sidebar，离开延迟收回
+const sidebar = document.querySelector('.sidebar');
+let hideTimeout = null;
+
+document.addEventListener('mousemove', (e) => {
+  const windowWidth = window.innerWidth;
+  const sidebarTop = sidebar.offsetTop;
+  const sidebarBottom = sidebarTop + sidebar.offsetHeight;
+
+  if (e.clientX > windowWidth - 30 && e.clientY > sidebarTop - 100 && e.clientY < sidebarBottom + 100) {
+    sidebar.classList.add('show');
+    if (hideTimeout) { clearTimeout(hideTimeout); hideTimeout = null; }
+  } else if (sidebar.classList.contains('show') && !hideTimeout) {
+    hideTimeout = setTimeout(() => { sidebar.classList.remove('show'); hideTimeout = null; }, 300);
+  }
+});
 </script>
 </body>
 </html>
