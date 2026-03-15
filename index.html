@@ -30,7 +30,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 /* 右侧悬浮圆角目录 */
 .sidebar { 
   position: fixed; 
-  top: 150px; 
+  top: 150px;  
   right: -160px; 
   width: 160px; 
   padding: 10px; 
@@ -51,7 +51,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   top: 35%;
   transform: translateY(-50%);
   font-size: 18px;
-  color: #aaa;
+  color: #aaa; 
 }
 .sidebar.show::before { display: none; }
 
@@ -68,7 +68,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   padding-left:0; 
   margin:0; 
   list-style:none; 
-  font-size:14px;
+  font-size:14px; 
 }
 
 .sidebar ul li { 
@@ -90,8 +90,15 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   background-color: rgba(0,120,215,0.1); 
 }
 
-/* 子分类缩进 */
-.sidebar ul li ul { margin-left:10px; }
+/* 子列表折叠/展开 */
+.sidebar ul li ul {
+  display: none;
+  margin-left: 10px;
+}
+
+.sidebar ul li ul.expanded {
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -135,10 +142,11 @@ function createSnow(){
 }
 setInterval(createSnow,150);
 
-// Tab 切换 & 随机头图
+// Tab 切换
 const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 const loadedTabs = {};
+
 const headerImages = [
   "Content/Images/header-image-1.png","Content/Images/header-image-2.png",
   "Content/Images/header-image-3.png","Content/Images/header-image-4.png",
@@ -175,82 +183,51 @@ function loadTabHTML(tabId){
   const tabFiles = { tab1:"articles/About.html", tab2:"articles/Demo.html", tab3:"articles/Share.html", tab4:"articles/Recommend.html" };
   const url = tabFiles[tabId];
   if(!url) return Promise.resolve();
-
   return fetch(url)
     .then(res=>res.text())
-    .then(html=>{ document.getElementById(tabId).innerHTML = html; })
+    .then(html=>{      document.getElementById(tabId).innerHTML = html; })
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成多级折叠目录（父点击展开、子点击跳转）
+// 生成目录栏 TOC
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
   toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
   const tabContent = document.getElementById(tabId);
 
   setTimeout(()=>{
-    function createTOC(detailsElements){
-      const ul = document.createElement('ul');
-
-      detailsElements.forEach(details=>{
-        const li = document.createElement('li');
-
-        const summaryText = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
-
-        // 父项目 a
-        const parentA = document.createElement('a');
-        parentA.href = 'javascript:void(0)';
-        parentA.textContent = summaryText;
-        parentA.style.fontWeight = 'bold';
-
-        // 父项目点击只展开目录栏子列表
-        let subUl = null;
-        li.appendChild(parentA);
-
-        const childDetails = details.querySelectorAll(':scope > details[data-toc]');
-        if(childDetails.length){
-          subUl = document.createElement('ul');
-          subUl.style.display = 'none'; // 初始折叠
-
-          childDetails.forEach(child=>{
-            const subLi = document.createElement('li');
-            const subText = child.getAttribute('data-toc') || child.querySelector('summary').textContent;
-
-            const subA = document.createElement('a');
-            subA.href = 'javascript:void(0)';
-            subA.textContent = subText;
-
-            // 子项目点击滚动到内容区
-            subA.addEventListener('click', ()=>{
-              const rect = child.getBoundingClientRect();
-              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-              window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
-            });
-
-            subLi.appendChild(subA);
-            subUl.appendChild(subLi);
-          });
-
-          li.appendChild(subUl);
-
-          // 父点击切换显示/隐藏子列表
-          parentA.addEventListener('click', ()=>{
-            if(subUl.style.display === 'none'){
-              subUl.style.display = 'block';
-            } else {
-              subUl.style.display = 'none';
-            }
-          });
-        }
-
-        ul.appendChild(li);
-      });
-
-      return ul;
-    }
-
     const topLevelDetails = tabContent.querySelectorAll(':scope > details[data-toc]');
-    toc.appendChild(createTOC(topLevelDetails));
+    topLevelDetails.forEach(details=>{
+      const li = document.createElement('li');
+      const parentA = document.createElement('a');
+      parentA.href = 'javascript:void(0)';
+      parentA.textContent = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
+      parentA.style.fontWeight = 'bold';
+      li.appendChild(parentA);
+
+      const childDetails = details.querySelectorAll(':scope > details[data-toc]');
+      if(childDetails.length){
+        const subUl = document.createElement('ul');
+        subUl.style.display = 'none';
+        childDetails.forEach(child=>{
+          const subLi = document.createElement('li');
+          const subA = document.createElement('a');
+          subA.href = 'javascript:void(0)';
+          subA.textContent = child.getAttribute('data-toc') || child.querySelector('summary').textContent;
+          subA.addEventListener('click', ()=>{
+            const rect = child.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
+          });
+          subLi.appendChild(subA);
+          subUl.appendChild(subLi);
+        });
+        li.appendChild(subUl);
+        parentA.addEventListener('click', ()=>{ subUl.classList.toggle('expanded'); });
+      }
+
+      toc.appendChild(li);
+    });
   }, 100);
 }
 
@@ -263,7 +240,7 @@ document.getElementById('back-to-top').addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// 右侧目录悬浮逻辑
+// 右侧悬浮逻辑
 const sidebar = document.querySelector('.sidebar');
 let hideTimeout = null;
 let hoveringSidebar = false;
