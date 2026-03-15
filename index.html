@@ -103,13 +103,11 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   </div>
 </div>
 
-<!-- 右侧隐藏式圆角目录 -->
 <div class="sidebar">
   <div>目录</div>
   <ul id="toc"></ul>
 </div>
 
-<!-- tab 内容 -->
 <div id="tab1" class="tab-content"></div>
 <div id="tab2" class="tab-content"></div>
 <div id="tab3" class="tab-content"></div>
@@ -178,53 +176,60 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 自定义文字目录
+// 生成目录
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
   toc.innerHTML="";
   const tabContent = document.getElementById(tabId);
-
-  setTimeout(()=>{ 
+  setTimeout(()=>{
     const summaries = tabContent.querySelectorAll('.article-section details summary');
-    summaries.forEach((summary) => {
+    summaries.forEach((summary)=>{
       const li = document.createElement('li');
       const a = document.createElement('a');
-      a.href = "javascript:void(0)";
+      a.href="javascript:void(0)";
       a.textContent = summary.parentElement.getAttribute('data-toc') || summary.textContent;
-
-      a.addEventListener('click', () => {
+      a.addEventListener('click',()=>{
         const details = summary.parentElement;
         details.open = true;
-        requestAnimationFrame(() => {
-          const rect = details.getBoundingClientRect();
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          window.scrollTo({ top: rect.top + scrollTop - 20, behavior: 'smooth' });
-        });
+        const rect = details.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
       });
-
       li.appendChild(a);
       toc.appendChild(li);
     });
-  }, 100);
+  },100);
 }
 
-// 页面加载时打开 hash 对应 tab
+// 初始打开 tab
 const hash = location.hash.replace("#","");
 if(hash && document.getElementById(hash)){ openTab(hash); } else { openTab("tab1"); }
 
-// 鼠标靠右边滑出 sidebar，离开延迟收回
+// 右侧隐藏式目录鼠标悬停逻辑
 const sidebar = document.querySelector('.sidebar');
 let hideTimeout = null;
+let hoveringSidebar = false;
+
+sidebar.addEventListener('mouseenter', () => {
+  hoveringSidebar = true;
+  sidebar.classList.add('show');
+  if(hideTimeout){ clearTimeout(hideTimeout); hideTimeout = null; }
+});
+
+sidebar.addEventListener('mouseleave', () => {
+  hoveringSidebar = false;
+  hideTimeout = setTimeout(() => { sidebar.classList.remove('show'); hideTimeout = null; }, 300);
+});
 
 document.addEventListener('mousemove', (e) => {
   const windowWidth = window.innerWidth;
   const sidebarTop = sidebar.offsetTop;
   const sidebarBottom = sidebarTop + sidebar.offsetHeight;
-
-  if (e.clientX > windowWidth - 30 && e.clientY > sidebarTop - 100 && e.clientY < sidebarBottom + 100) {
+  const nearRight = e.clientX > windowWidth - 30 && e.clientY > sidebarTop - 100 && e.clientY < sidebarBottom + 100;
+  if(nearRight){
     sidebar.classList.add('show');
-    if (hideTimeout) { clearTimeout(hideTimeout); hideTimeout = null; }
-  } else if (sidebar.classList.contains('show') && !hideTimeout) {
+    if(hideTimeout){ clearTimeout(hideTimeout); hideTimeout = null; }
+  } else if(!hoveringSidebar && sidebar.classList.contains('show') && !hideTimeout){
     hideTimeout = setTimeout(() => { sidebar.classList.remove('show'); hideTimeout = null; }, 300);
   }
 });
