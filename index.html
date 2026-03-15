@@ -30,7 +30,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 /* 右侧悬浮圆角目录 */
 .sidebar { 
   position: fixed; 
-  top: 350px; 
+  top: 150px;      /* 目录靠高 */
   right: -140px; 
   width: 140px; 
   padding: 10px; 
@@ -41,20 +41,18 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   border-radius: 16px 0 0 16px;
   box-shadow:0 6px 16px rgba(0,0,0,0.08);
   transition: right 0.3s ease;
-
-  max-height: 60vh;     /* 高度限制 */
-  overflow-y: auto;     /* 内容超出显示滚动条 */
 }
+
 .sidebar.show { right: 0; }
 
 .sidebar::before {
   content: "⮞";
   position: absolute;
   left: -20px;
-  top: 35%;       /* 箭头上移 */
+  top: 35%;
   transform: translateY(-50%);
   font-size: 18px;
-  color: #ffffff; /* 白色箭头 */
+  color: #ffffff;
 }
 .sidebar.show::before { display: none; }
 
@@ -85,6 +83,11 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   padding:3px 6px;
   border-radius:12px; 
   transition: background-color 0.2s;
+}
+
+.sidebar ul li a.small-text {
+  font-size: 12px;  /* 内层折叠小字 */
+  color: #555;
 }
 
 .sidebar ul li a:hover { 
@@ -182,7 +185,7 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成目录，包括外层折叠和内层折叠
+// 生成目录
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
   toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
@@ -194,9 +197,16 @@ function generateSidebarTOC(tabId){
       const a = document.createElement('a');
       a.href = "javascript:void(0)";
       a.textContent = summary.parentElement.getAttribute('data-toc') || summary.textContent;
+
+      // 内层折叠小字
+      if(summary.closest('.article-section')){
+        a.classList.add('small-text');
+      }
+
       a.addEventListener('click', ()=>{
         const details = summary.parentElement;
         details.open = true;
+        // 展开父级折叠
         let parent = details.parentElement;
         while(parent){
           if(parent.tagName==='DETAILS') parent.open = true;
@@ -216,12 +226,12 @@ function generateSidebarTOC(tabId){
 const hash = location.hash.replace("#","");
 if(hash && document.getElementById(hash)){ openTab(hash); } else { openTab("tab1"); }
 
-// 回到顶部事件
+// 回到顶部
 document.getElementById('back-to-top').addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// 右侧目录悬停逻辑
+// 右侧悬浮目录
 const sidebar = document.querySelector('.sidebar');
 let hideTimeout = null;
 let hoveringSidebar = false;
