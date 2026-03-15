@@ -30,7 +30,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 /* 右侧悬浮圆角目录 */
 .sidebar { 
   position: fixed; 
-  top: 100px;               /* 目录距离顶部 */
+  top: 150px;  
   right: -160px; 
   width: 160px; 
   padding: 10px; 
@@ -41,8 +41,6 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   border-radius: 16px 0 0 16px;
   box-shadow:0 6px 16px rgba(0,0,0,0.08);
   transition: right 0.3s ease;
-  max-height: 80vh;         /* 高度不超过视口 */
-  overflow-y: auto;         /* 内容超出可滚动 */
 }
 .sidebar.show { right: 0; }
 
@@ -53,7 +51,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   top: 35%;
   transform: translateY(-50%);
   font-size: 18px;
-  color: #aaa; /* 淡灰色箭头 */
+  color: #aaa;
 }
 .sidebar.show::before { display: none; }
 
@@ -70,7 +68,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   padding-left:0; 
   margin:0; 
   list-style:none; 
-  font-size:14px; /* 小字 */
+  font-size:14px;
 }
 
 .sidebar ul li { 
@@ -137,7 +135,12 @@ function createSnow(){
 }
 setInterval(createSnow,150);
 
-// ❄ 随机头图
+// tab 切换
+const buttons = document.querySelectorAll('.tab-btn');
+const contents = document.querySelectorAll('.tab-content');
+const loadedTabs = {};
+
+// 随机头图
 const headerImages = [
   "Content/Images/header-image-1.png","Content/Images/header-image-2.png",
   "Content/Images/header-image-3.png","Content/Images/header-image-4.png",
@@ -150,11 +153,6 @@ if(headerEl && headerImages.length){
   const idx = Math.floor(Math.random() * headerImages.length);
   headerEl.style.backgroundImage = `url('${headerImages[idx]}')`;
 }
-
-// tab 切换
-const buttons = document.querySelectorAll('.tab-btn');
-const contents = document.querySelectorAll('.tab-content');
-const loadedTabs = {};
 
 function openTab(tabId){
   contents.forEach(c=>c.classList.remove('active'));
@@ -186,76 +184,66 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成折叠目录（保留多级折叠 + 滚动高亮）
+// 生成多级折叠目录
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
   toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
   const tabContent = document.getElementById(tabId);
 
   setTimeout(()=>{
-    const detailsList = tabContent.querySelectorAll('details[data-toc]');
-    detailsList.forEach(details=>{
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href="javascript:void(0)";
-      a.textContent = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
-      a.addEventListener('click', ()=>{
-        details.open = true;
-        let parent = details.parentElement;
-        while(parent){ if(parent.tagName==='DETAILS') parent.open=true; parent=parent.parentElement; }
-        const rect = details.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
-      });
-      li.appendChild(a);
+    function createTOC(detailsElements){
+      const ul = document.createElement('ul');
 
-      const innerDetails = details.querySelectorAll('details summary');
-      if(innerDetails.length){
-        const subUl = document.createElement('ul');
-        innerDetails.forEach(s=>{
-          const subLi = document.createElement('li');
-          const subA = document.createElement('a');
-          subA.href="javascript:void(0)";
-          subA.textContent = s.parentElement.getAttribute('data-toc') || s.textContent;
-          subA.addEventListener('click',()=>{
-            s.parentElement.open = true;
-            let parent2 = s.parentElement.parentElement;
-            while(parent2){ if(parent2.tagName==='DETAILS') parent2.open=true; parent2=parent2.parentElement; }
-            const rect2 = s.parentElement.getBoundingClientRect();
-            const scrollTop2 = window.pageYOffset || document.documentElement.scrollTop;
-            window.scrollTo({top: rect2.top + scrollTop2 - 20, behavior:'smooth'});
-          });
-          subLi.appendChild(subA);
-          subUl.appendChild(subLi);
+      detailsElements.forEach(details=>{
+        const li = document.createElement('li');
+
+        const summaryText = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
+
+        const summaryBtn = document.createElement('a');
+        summaryBtn.href = 'javascript:void(0)';
+        summaryBtn.textContent = summaryText;
+        summaryBtn.style.fontWeight = 'bold';
+
+        summaryBtn.addEventListener('click', ()=>{
+          details.open = !details.open;
         });
-        li.appendChild(subUl);
-      }
+        li.appendChild(summaryBtn);
 
-      toc.appendChild(li);
-    });
+        const childDetails = details.querySelectorAll(':scope > details[data-toc]');
+        if(childDetails.length){
+          const subUl = document.createElement('ul');
+          childDetails.forEach(child=>{
+            const subLi = document.createElement('li');
+            const subText = child.getAttribute('data-toc') || child.querySelector('summary').textContent;
 
-    const links = toc.querySelectorAll('a');
-    function highlightCurrent(){
-      let fromTop = window.scrollY + 50;
-      links.forEach(link=>{
-        const targetText = link.textContent;
-        let targetEl = [...tabContent.querySelectorAll('summary')].find(s=>s.textContent===targetText);
-        if(targetEl){
-          const rect = targetEl.getBoundingClientRect();
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          const top = rect.top + scrollTop;
-          if(fromTop >= top && fromTop < top + rect.height){
-            link.classList.add('active');
-            let parent = targetEl.parentElement;
-            while(parent){ if(parent.tagName==='DETAILS') parent.open=true; parent=parent.parentElement; }
-          } else {
-            link.classList.remove('active');
-          }
+            const subA = document.createElement('a');
+            subA.href="javascript:void(0)";
+            subA.textContent = subText;
+
+            subA.addEventListener('click',()=>{
+              child.open = true;
+              let parent = child.parentElement;
+              while(parent){ if(parent.tagName==='DETAILS') parent.open=true; parent=parent.parentElement; }
+              const rect = child.getBoundingClientRect();
+              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+              window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
+            });
+
+            subLi.appendChild(subA);
+            subUl.appendChild(subLi);
+          });
+          li.appendChild(subUl);
         }
+
+        ul.appendChild(li);
       });
+
+      return ul;
     }
-    window.addEventListener('scroll', highlightCurrent);
-    highlightCurrent();
+
+    const topLevelDetails = tabContent.querySelectorAll(':scope > details[data-toc]');
+    toc.appendChild(createTOC(topLevelDetails));
+
   },100);
 }
 
