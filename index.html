@@ -95,10 +95,6 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   display: none;
   margin-left: 10px;
 }
-
-.sidebar ul li ul.expanded {
-  display: block;
-}
 </style>
 </head>
 <body>
@@ -185,7 +181,7 @@ function loadTabHTML(tabId){
   if(!url) return Promise.resolve();
   return fetch(url)
     .then(res=>res.text())
-    .then(html=>{      document.getElementById(tabId).innerHTML = html; })
+    .then(html=>{ document.getElementById(tabId).innerHTML = html; })
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
@@ -215,6 +211,9 @@ function generateSidebarTOC(tabId){
           subA.href = 'javascript:void(0)';
           subA.textContent = child.getAttribute('data-toc') || child.querySelector('summary').textContent;
           subA.addEventListener('click', ()=>{
+            child.open = true;
+            let parentDetail = child.parentElement;
+            while(parentDetail){ if(parentDetail.tagName==='DETAILS') parentDetail.open=true; parentDetail = parentDetail.parentElement; }
             const rect = child.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
@@ -223,7 +222,10 @@ function generateSidebarTOC(tabId){
           subUl.appendChild(subLi);
         });
         li.appendChild(subUl);
-        parentA.addEventListener('click', ()=>{ subUl.classList.toggle('expanded'); });
+        // 父项点击展开/折叠子项目录
+        parentA.addEventListener('click', ()=>{ 
+          subUl.style.display = (subUl.style.display==='block') ? 'none' : 'block';
+        });
       }
 
       toc.appendChild(li);
