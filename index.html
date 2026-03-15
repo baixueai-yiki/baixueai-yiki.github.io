@@ -30,11 +30,11 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 /* 右侧悬浮圆角目录 */
 .sidebar { 
   position: fixed; 
-  top: 400px; 
+  top: 150px;  /* 调整目录高度 */
   right: -160px; 
   width: 160px; 
   padding: 10px; 
-  background: rgba(245,245,245,0.95); 
+  background: rgba(245,245,245,0.9); 
   border-left:1px solid #ddd; 
   z-index: 10; 
   box-sizing:border-box; 
@@ -51,14 +51,14 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   top: 35%;
   transform: translateY(-50%);
   font-size: 18px;
-  color: #888888; /* 淡灰色箭头 */
+  color: #aaa; /* 淡灰色箭头 */
 }
 .sidebar.show::before { display: none; }
 
 .sidebar div { 
   font-weight:bold; 
   margin-bottom:10px; 
-  font-size:14px; 
+  font-size:16px; 
   border-radius:12px; 
   padding:2px 4px;
   background-color: rgba(255,255,255,0.7); 
@@ -68,6 +68,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   padding-left:0; 
   margin:0; 
   list-style:none; 
+  font-size:14px; /* 小字 */
 }
 
 .sidebar ul li { 
@@ -76,21 +77,21 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 
 .sidebar ul li a { 
   cursor:pointer; 
-  color:#444; 
+  color:#333; 
   text-decoration:none; 
   display:block; 
-  padding:2px 4px;
-  font-size:12px;
+  padding:3px 6px;
   border-radius:8px; 
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s;
 }
 
-.sidebar ul li a.active { font-weight:bold; color:#0078D7; }
-
-.sidebar ul li a:hover { 
+.sidebar ul li a:hover, .sidebar ul li a.active { 
   color:#0078D7; 
   background-color: rgba(0,120,215,0.1); 
 }
+
+/* 子分类缩进 */
+.sidebar ul li ul { margin-left:10px; }
 </style>
 </head>
 <body>
@@ -139,19 +140,6 @@ const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 const loadedTabs = {};
 
-const headerImages = [
-  "Content/Images/header-image-1.png","Content/Images/header-image-2.png",
-  "Content/Images/header-image-3.png","Content/Images/header-image-4.png",
-  "Content/Images/header-image-5.png","Content/Images/header-image-6.png",
-  "Content/Images/header-image-7.png","Content/Images/header-image-8.png",
-  "Content/Images/header-image-9.png","Content/Images/header-image-10.png"
-];
-const headerEl = document.querySelector(".top-banner");
-if(headerEl && headerImages.length){
-  const idx = Math.floor(Math.random() * headerImages.length);
-  headerEl.style.backgroundImage = `url('${headerImages[idx]}')`;
-}
-
 function openTab(tabId){
   contents.forEach(c=>c.classList.remove('active'));
   buttons.forEach(b=>b.classList.remove('active'));
@@ -182,36 +170,33 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成目录，包括分类折叠
+// 生成折叠目录
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
   toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
   const tabContent = document.getElementById(tabId);
+
   setTimeout(()=>{
     const detailsList = tabContent.querySelectorAll('details[data-toc]');
     detailsList.forEach(details=>{
       const li = document.createElement('li');
       const a = document.createElement('a');
-      a.href = "javascript:void(0)";
+      a.href="javascript:void(0)";
       a.textContent = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
       a.addEventListener('click', ()=>{
         details.open = true;
         let parent = details.parentElement;
-        while(parent){
-          if(parent.tagName==='DETAILS') parent.open = true;
-          parent = parent.parentElement;
-        }
+        while(parent){ if(parent.tagName==='DETAILS') parent.open=true; parent=parent.parentElement; }
         const rect = details.getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
       });
       li.appendChild(a);
 
-      // 内部子项
-      const inner = details.querySelectorAll('details summary');
-      if(inner.length){
+      const innerDetails = details.querySelectorAll('details summary');
+      if(innerDetails.length){
         const subUl = document.createElement('ul');
-        inner.forEach(s=>{
+        innerDetails.forEach(s=>{
           const subLi = document.createElement('li');
           const subA = document.createElement('a');
           subA.href="javascript:void(0)";
@@ -222,7 +207,7 @@ function generateSidebarTOC(tabId){
             while(parent2){ if(parent2.tagName==='DETAILS') parent2.open=true; parent2=parent2.parentElement; }
             const rect2 = s.parentElement.getBoundingClientRect();
             const scrollTop2 = window.pageYOffset || document.documentElement.scrollTop;
-            window.scrollTo({top: rect2.top+scrollTop2-20, behavior:'smooth'});
+            window.scrollTo({top: rect2.top + scrollTop2 - 20, behavior:'smooth'});
           });
           subLi.appendChild(subA);
           subUl.appendChild(subLi);
@@ -232,6 +217,29 @@ function generateSidebarTOC(tabId){
 
       toc.appendChild(li);
     });
+
+    const links = toc.querySelectorAll('a');
+    function highlightCurrent(){
+      let fromTop = window.scrollY + 50;
+      links.forEach(link=>{
+        const targetText = link.textContent;
+        let targetEl = [...tabContent.querySelectorAll('summary')].find(s=>s.textContent===targetText);
+        if(targetEl){
+          const rect = targetEl.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const top = rect.top + scrollTop;
+          if(fromTop >= top && fromTop < top + rect.height){
+            link.classList.add('active');
+            let parent = targetEl.parentElement;
+            while(parent){ if(parent.tagName==='DETAILS') parent.open=true; parent=parent.parentElement; }
+          } else {
+            link.classList.remove('active');
+          }
+        }
+      });
+    }
+    window.addEventListener('scroll', highlightCurrent);
+    highlightCurrent();
   },100);
 }
 
