@@ -30,11 +30,11 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 /* 右侧悬浮圆角目录 */
 .sidebar { 
   position: fixed; 
-  top: 150px;      /* 目录靠高 */
-  right: -140px; 
-  width: 140px; 
+  top: 400px; 
+  right: -160px; 
+  width: 160px; 
   padding: 10px; 
-  background: rgba(245,245,245,0.9); 
+  background: rgba(245,245,245,0.95); 
   border-left:1px solid #ddd; 
   z-index: 10; 
   box-sizing:border-box; 
@@ -42,7 +42,6 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   box-shadow:0 6px 16px rgba(0,0,0,0.08);
   transition: right 0.3s ease;
 }
-
 .sidebar.show { right: 0; }
 
 .sidebar::before {
@@ -52,14 +51,14 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   top: 35%;
   transform: translateY(-50%);
   font-size: 18px;
-  color: #ffffff;
+  color: #888888; /* 淡灰色箭头 */
 }
 .sidebar.show::before { display: none; }
 
 .sidebar div { 
   font-weight:bold; 
   margin-bottom:10px; 
-  font-size:16px; 
+  font-size:14px; 
   border-radius:12px; 
   padding:2px 4px;
   background-color: rgba(255,255,255,0.7); 
@@ -72,23 +71,21 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 }
 
 .sidebar ul li { 
-  margin-bottom:8px; 
+  margin-bottom:6px; 
 }
 
 .sidebar ul li a { 
   cursor:pointer; 
-  color:#333; 
+  color:#444; 
   text-decoration:none; 
   display:block; 
-  padding:3px 6px;
-  border-radius:12px; 
-  transition: background-color 0.2s;
+  padding:2px 4px;
+  font-size:12px;
+  border-radius:8px; 
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.sidebar ul li a.small-text {
-  font-size: 12px;  /* 内层折叠小字 */
-  color: #555;
-}
+.sidebar ul li a.active { font-weight:bold; color:#0078D7; }
 
 .sidebar ul li a:hover { 
   color:#0078D7; 
@@ -185,28 +182,20 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成目录
+// 生成目录，包括分类折叠
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
   toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
   const tabContent = document.getElementById(tabId);
   setTimeout(()=>{
-    const summaries = tabContent.querySelectorAll('details summary');
-    summaries.forEach(summary=>{
+    const detailsList = tabContent.querySelectorAll('details[data-toc]');
+    detailsList.forEach(details=>{
       const li = document.createElement('li');
       const a = document.createElement('a');
       a.href = "javascript:void(0)";
-      a.textContent = summary.parentElement.getAttribute('data-toc') || summary.textContent;
-
-      // 内层折叠小字
-      if(summary.closest('.article-section')){
-        a.classList.add('small-text');
-      }
-
+      a.textContent = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
       a.addEventListener('click', ()=>{
-        const details = summary.parentElement;
         details.open = true;
-        // 展开父级折叠
         let parent = details.parentElement;
         while(parent){
           if(parent.tagName==='DETAILS') parent.open = true;
@@ -217,6 +206,30 @@ function generateSidebarTOC(tabId){
         window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
       });
       li.appendChild(a);
+
+      // 内部子项
+      const inner = details.querySelectorAll('details summary');
+      if(inner.length){
+        const subUl = document.createElement('ul');
+        inner.forEach(s=>{
+          const subLi = document.createElement('li');
+          const subA = document.createElement('a');
+          subA.href="javascript:void(0)";
+          subA.textContent = s.parentElement.getAttribute('data-toc') || s.textContent;
+          subA.addEventListener('click',()=>{
+            s.parentElement.open = true;
+            let parent2 = s.parentElement.parentElement;
+            while(parent2){ if(parent2.tagName==='DETAILS') parent2.open=true; parent2=parent2.parentElement; }
+            const rect2 = s.parentElement.getBoundingClientRect();
+            const scrollTop2 = window.pageYOffset || document.documentElement.scrollTop;
+            window.scrollTo({top: rect2.top+scrollTop2-20, behavior:'smooth'});
+          });
+          subLi.appendChild(subA);
+          subUl.appendChild(subLi);
+        });
+        li.appendChild(subUl);
+      }
+
       toc.appendChild(li);
     });
   },100);
@@ -226,12 +239,12 @@ function generateSidebarTOC(tabId){
 const hash = location.hash.replace("#","");
 if(hash && document.getElementById(hash)){ openTab(hash); } else { openTab("tab1"); }
 
-// 回到顶部
+// 回到顶部事件
 document.getElementById('back-to-top').addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// 右侧悬浮目录
+// 右侧目录悬停逻辑
 const sidebar = document.querySelector('.sidebar');
 let hideTimeout = null;
 let hoveringSidebar = false;
