@@ -95,7 +95,10 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   display: none;
   margin-left: 10px;
 }
-.sidebar ul li ul.expanded { display: block; }
+
+.sidebar ul li ul.expanded {
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -193,47 +196,37 @@ function generateSidebarTOC(tabId){
   const tabContent = document.getElementById(tabId);
 
   setTimeout(()=>{
-    const allDetails = tabContent.querySelectorAll('details[data-toc]');
-    allDetails.forEach(details=>{
-      const type = details.getAttribute('data-toc-type'); // parent / child
+    const parents = tabContent.querySelectorAll('details[data-toc-type="parent"]');
+    parents.forEach(parent=>{
       const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.textContent = details.getAttribute('data-toc');
-      a.href = 'javascript:void(0)';
-      li.appendChild(a);
+      const parentA = document.createElement('a');
+      parentA.href = 'javascript:void(0)';
+      parentA.textContent = parent.getAttribute('data-toc');
+      parentA.style.fontWeight = 'bold';
 
-      if(type === 'parent'){
-        const childDetails = details.querySelectorAll('details[data-toc][data-toc-type="child"]');
-        if(childDetails.length){
-          const subUl = document.createElement('ul');
-          subUl.style.display = 'none';
-          childDetails.forEach(child=>{
-            const subLi = document.createElement('li');
-            const subA = document.createElement('a');
-            subA.textContent = child.getAttribute('data-toc');
-            subA.href = 'javascript:void(0)';
-            subA.addEventListener('click', ()=>{
-              const rect = child.getBoundingClientRect();
-              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-              window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
-            });
-            subLi.appendChild(subA);
-            subUl.appendChild(subLi);
-          });
-          li.appendChild(subUl);
-          a.addEventListener('click', ()=>{ subUl.style.display = subUl.style.display === 'none' ? 'block' : 'none'; });
-        }
-      } else if(type === 'child'){
-        a.addEventListener('click', ()=>{
-          const rect = details.getBoundingClientRect();
+      const childUl = document.createElement('ul');
+      parent.querySelectorAll('details[data-toc-type="child"]').forEach(child=>{
+        const subLi = document.createElement('li');
+        const subA = document.createElement('a');
+        subA.href = 'javascript:void(0)';
+        subA.textContent = child.getAttribute('data-toc');
+        subA.addEventListener('click', ()=>{
+          const rect = child.getBoundingClientRect();
           const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
           window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
         });
-      }
+        subLi.appendChild(subA);
+        childUl.appendChild(subLi);
+      });
+
+      li.appendChild(parentA);
+      li.appendChild(childUl);
+
+      parentA.addEventListener('click', ()=>{ childUl.classList.toggle('expanded'); });
 
       toc.appendChild(li);
     });
-  },100);
+  }, 100);
 }
 
 // 初始打开 Tab
