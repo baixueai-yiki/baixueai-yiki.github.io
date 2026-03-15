@@ -30,7 +30,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 /* 右侧悬浮圆角目录 */
 .sidebar { 
   position: fixed; 
-  top: 150px;  
+  top: 150px; 
   right: -160px; 
   width: 160px; 
   padding: 10px; 
@@ -135,12 +135,10 @@ function createSnow(){
 }
 setInterval(createSnow,150);
 
-// tab 切换
+// Tab 切换 & 随机头图
 const buttons = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 const loadedTabs = {};
-
-// 随机头图
 const headerImages = [
   "Content/Images/header-image-1.png","Content/Images/header-image-2.png",
   "Content/Images/header-image-3.png","Content/Images/header-image-4.png",
@@ -184,7 +182,7 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成多级折叠目录
+// 生成多级折叠目录（父点击展开、子点击跳转）
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
   toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
@@ -193,25 +191,17 @@ function generateSidebarTOC(tabId){
   setTimeout(()=>{
     function createTOC(detailsElements){
       const ul = document.createElement('ul');
-
       detailsElements.forEach(details=>{
         const li = document.createElement('li');
-
         const summaryText = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
 
-        // 父项目 a
-        const summaryBtn = document.createElement('a');
-        summaryBtn.href = 'javascript:void(0)';
-        summaryBtn.textContent = summaryText;
-        summaryBtn.style.fontWeight = 'bold';
+        const parentA = document.createElement('a');
+        parentA.href = 'javascript:void(0)';
+        parentA.textContent = summaryText;
+        parentA.style.fontWeight = 'bold';
+        parentA.addEventListener('click', ()=>{ details.open = !details.open; });
+        li.appendChild(parentA);
 
-        // 点击父项目只展开折叠
-        summaryBtn.addEventListener('click', ()=>{
-          details.open = !details.open;
-        });
-        li.appendChild(summaryBtn);
-
-        // 查找直接子 details
         const childDetails = details.querySelectorAll(':scope > details[data-toc]');
         if(childDetails.length){
           const subUl = document.createElement('ul');
@@ -220,14 +210,15 @@ function generateSidebarTOC(tabId){
             const subText = child.getAttribute('data-toc') || child.querySelector('summary').textContent;
 
             const subA = document.createElement('a');
-            subA.href="javascript:void(0)";
+            subA.href = 'javascript:void(0)';
             subA.textContent = subText;
-
-            // 点击子项目滚动到对应内容
-            subA.addEventListener('click',()=>{
+            subA.addEventListener('click', ()=>{
               child.open = true;
-              let parent = child.parentElement;
-              while(parent){ if(parent.tagName==='DETAILS') parent.open=true; parent=parent.parentElement; }
+              let parentNode = child.parentElement;
+              while(parentNode){
+                if(parentNode.tagName==='DETAILS') parentNode.open = true;
+                parentNode = parentNode.parentElement;
+              }
               const rect = child.getBoundingClientRect();
               const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
               window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
@@ -241,25 +232,24 @@ function generateSidebarTOC(tabId){
 
         ul.appendChild(li);
       });
-
       return ul;
     }
 
     const topLevelDetails = tabContent.querySelectorAll(':scope > details[data-toc]');
     toc.appendChild(createTOC(topLevelDetails));
-  },100);
+  }, 100);
 }
 
-// 初始打开 tab
+// 初始打开 Tab
 const hash = location.hash.replace("#","");
 if(hash && document.getElementById(hash)){ openTab(hash); } else { openTab("tab1"); }
 
-// 回到顶部事件
+// 回到顶部
 document.getElementById('back-to-top').addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// 右侧目录悬停逻辑
+// 右侧目录悬浮逻辑
 const sidebar = document.querySelector('.sidebar');
 let hideTimeout = null;
 let hoveringSidebar = false;
