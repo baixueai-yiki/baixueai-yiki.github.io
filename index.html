@@ -182,57 +182,52 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成目录，包括分类折叠
+// 生成目录：父折叠，子点击跳转
 function generateSidebarTOC(tabId){
-  const toc = document.getElementById('toc');
-  toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
-  const tabContent = document.getElementById(tabId);
-  setTimeout(()=>{
-    const detailsList = tabContent.querySelectorAll('details[data-toc]');
-    detailsList.forEach(details=>{
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = "javascript:void(0)";
-      a.textContent = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
-      a.addEventListener('click', ()=>{
-        details.open = true;
-        let parent = details.parentElement;
-        while(parent){
-          if(parent.tagName==='DETAILS') parent.open = true;
-          parent = parent.parentElement;
-        }
-        const rect = details.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
-      });
-      li.appendChild(a);
+    const toc = document.getElementById('toc');
+    toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
+    const tabContent = document.getElementById(tabId);
 
-      // 内部子项
-      const inner = details.querySelectorAll('details summary');
-      if(inner.length){
-        const subUl = document.createElement('ul');
-        inner.forEach(s=>{
-          const subLi = document.createElement('li');
-          const subA = document.createElement('a');
-          subA.href="javascript:void(0)";
-          subA.textContent = s.parentElement.getAttribute('data-toc') || s.textContent;
-          subA.addEventListener('click',()=>{
-            s.parentElement.open = true;
-            let parent2 = s.parentElement.parentElement;
-            while(parent2){ if(parent2.tagName==='DETAILS') parent2.open=true; parent2=parent2.parentElement; }
-            const rect2 = s.parentElement.getBoundingClientRect();
-            const scrollTop2 = window.pageYOffset || document.documentElement.scrollTop;
-            window.scrollTo({top: rect2.top+scrollTop2-20, behavior:'smooth'});
-          });
-          subLi.appendChild(subA);
-          subUl.appendChild(subLi);
+    setTimeout(()=>{
+        const detailsList = tabContent.querySelectorAll('details[data-toc]');
+        detailsList.forEach(details=>{
+            const li = document.createElement('li');
+
+            // 父项目
+            const summary = details.querySelector('summary');
+            const a = document.createElement('a');
+            a.href = "javascript:void(0)";
+            a.textContent = details.getAttribute('data-toc') || summary.textContent;
+            a.addEventListener('click', ()=>{
+                details.open = !details.open;
+            });
+            li.appendChild(a);
+
+            // 子项目
+            const childSummaries = details.querySelectorAll(':scope > details summary');
+            if(childSummaries.length){
+                const subUl = document.createElement('ul');
+                childSummaries.forEach(s=>{
+                    const subLi = document.createElement('li');
+                    const subA = document.createElement('a');
+                    subA.href="javascript:void(0)";
+                    subA.textContent = s.parentElement.getAttribute('data-toc') || s.textContent;
+                    subA.addEventListener('click', ()=>{
+                        let parent = s.parentElement;
+                        while(parent){ if(parent.tagName==='DETAILS') parent.open = true; parent = parent.parentElement; }
+                        const rect = s.parentElement.getBoundingClientRect();
+                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                        window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
+                    });
+                    subLi.appendChild(subA);
+                    subUl.appendChild(subLi);
+                });
+                li.appendChild(subUl);
+            }
+
+            toc.appendChild(li);
         });
-        li.appendChild(subUl);
-      }
-
-      toc.appendChild(li);
-    });
-  },100);
+    },100);
 }
 
 // 初始打开 tab
