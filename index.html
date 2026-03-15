@@ -191,20 +191,27 @@ function generateSidebarTOC(tabId){
   setTimeout(()=>{
     function createTOC(detailsElements){
       const ul = document.createElement('ul');
+
       detailsElements.forEach(details=>{
         const li = document.createElement('li');
+
         const summaryText = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
 
+        // 父项目 a
         const parentA = document.createElement('a');
         parentA.href = 'javascript:void(0)';
         parentA.textContent = summaryText;
         parentA.style.fontWeight = 'bold';
-        parentA.addEventListener('click', ()=>{ details.open = !details.open; });
+
+        // 父项目点击只展开目录栏子列表
+        let subUl = null;
         li.appendChild(parentA);
 
         const childDetails = details.querySelectorAll(':scope > details[data-toc]');
         if(childDetails.length){
-          const subUl = document.createElement('ul');
+          subUl = document.createElement('ul');
+          subUl.style.display = 'none'; // 初始折叠
+
           childDetails.forEach(child=>{
             const subLi = document.createElement('li');
             const subText = child.getAttribute('data-toc') || child.querySelector('summary').textContent;
@@ -212,13 +219,9 @@ function generateSidebarTOC(tabId){
             const subA = document.createElement('a');
             subA.href = 'javascript:void(0)';
             subA.textContent = subText;
+
+            // 子项目点击滚动到内容区
             subA.addEventListener('click', ()=>{
-              child.open = true;
-              let parentNode = child.parentElement;
-              while(parentNode){
-                if(parentNode.tagName==='DETAILS') parentNode.open = true;
-                parentNode = parentNode.parentElement;
-              }
               const rect = child.getBoundingClientRect();
               const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
               window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
@@ -227,11 +230,22 @@ function generateSidebarTOC(tabId){
             subLi.appendChild(subA);
             subUl.appendChild(subLi);
           });
+
           li.appendChild(subUl);
+
+          // 父点击切换显示/隐藏子列表
+          parentA.addEventListener('click', ()=>{
+            if(subUl.style.display === 'none'){
+              subUl.style.display = 'block';
+            } else {
+              subUl.style.display = 'none';
+            }
+          });
         }
 
         ul.appendChild(li);
       });
+
       return ul;
     }
 
