@@ -1,15 +1,64 @@
-<div style="display:flex; gap:30px; margin:0; padding:0;">
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>左侧目录布局</title>
+<style>
+body {
+  margin:0;
+  padding:0;
+  font-family: sans-serif;
+}
+.container {
+  display:flex;
+}
+.sidebar {
+  flex:0 0 auto;
+  padding:0;
+  margin:0;
+}
+.sidebar div {
+  font-weight:bold;
+  font-size:16px;
+  margin-bottom:10px;
+}
+.sidebar ul {
+  padding-left:0;
+  margin:0;
+  list-style-position:inside;
+}
+.content {
+  flex:1;
+  padding:0 20px; /* 右侧内容留一点内边距看起来舒服 */
+}
+.article-section {
+  margin-bottom:20px;
+}
+.article-section img {
+  width:50%;
+  height:auto;
+}
+.img-row {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+</style>
+</head>
+<body>
 
-<div style="flex:0 1 auto; padding:0; margin:0;">
-<div style="font-weight:bold; font-size:16px; margin-bottom:10px;">目录</div>
-<ul style="padding-left:0; margin:0; list-style-position:inside;">
+<div class="container">
+
+<div class="sidebar">
+<div>目录</div>
+<ul>
 <li><a href="#onedrive">1</a></li>
 <li><a href="#onenote">2</a></li>
 <li><a href="#worldmachine">3</a></li>
 </ul>
 </div>
 
-<div style="flex:1; margin:0; padding:0;">
+<div class="content">
 
 <div class="article-section" id="onedrive">
 <details>
@@ -20,9 +69,9 @@
 <br>你甚至可以在手机的 OneDrive 软件上下载到你电脑上的这些东西（图2）
 <br>总之放一个官方的下载地址：
 <a href="https://www.microsoft.com/zh-cn/microsoft-365/onedrive/download" target="_blank">下载地址</a>
-<div style="display:flex; gap:10px; flex-wrap:wrap;">
-<img src="/Content/Images/OneDrive.png" alt="OneDrive1" style="width:50%; height:auto;">
-<img src="/Content/Images/OneDrive.jpg" alt="OneDrive2" style="width:50%; height:auto;">
+<div class="img-row">
+<img src="/Content/Images/OneDrive.png" alt="OneDrive1">
+<img src="/Content/Images/OneDrive.jpg" alt="OneDrive2">
 </div>
 </details>
 </div>
@@ -32,9 +81,9 @@
 <summary><strong>2.微软笔记 OneNote</strong></summary>
 这是个和微软云盘 OneDrive 很像的东西，不同的是 OneNote 以存储文本为主
 <br>同样的实时同步，同样的手机与电脑互通
-<div style="display:flex; gap:10px; flex-wrap:wrap;">
-<img src="/Content/Images/OneNote.png" alt="OneNote1" style="width:50%; height:auto;">
-<img src="/Content/Images/OneNote.jpg" alt="OneNote2" style="width:50%; height:auto;">
+<div class="img-row">
+<img src="/Content/Images/OneNote.png" alt="OneNote1">
+<img src="/Content/Images/OneNote.jpg" alt="OneNote2">
 </div>
 </details>
 </div>
@@ -48,11 +97,14 @@
 <br>或者你还可以导入一张灰度图，像我这样直接用地理题上的插图改一个地形模型出来
 <br>官方地址：
 <a href="https://www.world-machine.com" target="_blank">WorldMachine官网</a>
-<div style="display:flex; gap:10px; flex-wrap:wrap;">
-<img src="/Content/Images/WorldMachine.png" alt="WorldMachine" style="width:50%; height:auto;">
+<div class="img-row">
+<img src="/Content/Images/WorldMachine.png" alt="WorldMachine">
 </div>
 </details>
 </div>
 
 </div>
 </div>
+
+</body>
+</html>
