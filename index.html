@@ -29,21 +29,20 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 
 /* 右侧悬浮圆角目录 */
 .sidebar { 
-  position: fixed;               /* 固定在屏幕右侧，不随滚动消失 */
-  top: 150px;                    /* 距离顶部 400px，可以调整目录竖向位置 */
-  right: -160px;                 /* 默认隐藏在屏幕右侧外侧，鼠标悬停时弹出 */
-  width: 160px;                  /* 目录宽度 */
-  padding: 10px;                 /* 内边距，让内容不紧贴边缘 */
-  background: rgba(245,245,245,0.95); /* 背景色，带透明度 */
-  border-left: 1px solid #ddd;   /* 左侧边框，让目录和内容区区分 */
-  z-index: 10;                   /* 保证目录在其他元素之上 */
-  box-sizing: border-box;        /* 包括 padding 在宽度计算里 */
-  border-radius: 16px 0 0 16px;  /* 左上和左下圆角 */
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08); /* 阴影，增加立体感 */
-  transition: right 0.3s ease;   /* 弹出/隐藏的动画效果 */
-  /* 不限制高度，不显示滚动条 */
-  /* max-height: 70vh; */
-  /* overflow-y: auto; */
+  position: fixed; 
+  top: 100px;               /* 目录距离顶部 */
+  right: -160px; 
+  width: 160px; 
+  padding: 10px; 
+  background: rgba(245,245,245,0.9); 
+  border-left:1px solid #ddd; 
+  z-index: 10; 
+  box-sizing:border-box; 
+  border-radius: 16px 0 0 16px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.08);
+  transition: right 0.3s ease;
+  max-height: 80vh;         /* 高度不超过视口 */
+  overflow-y: auto;         /* 内容超出可滚动 */
 }
 .sidebar.show { right: 0; }
 
@@ -54,57 +53,47 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
   top: 35%;
   transform: translateY(-50%);
   font-size: 18px;
-  color: #888888; /* 淡灰色箭头 */
+  color: #aaa; /* 淡灰色箭头 */
 }
 .sidebar.show::before { display: none; }
 
 .sidebar div { 
   font-weight:bold; 
   margin-bottom:10px; 
-  font-size:14px; 
+  font-size:16px; 
   border-radius:12px; 
   padding:2px 4px;
   background-color: rgba(255,255,255,0.7); 
 }
 
-.sidebar details {
-  margin-bottom:6px;
+.sidebar ul { 
+  padding-left:0; 
+  margin:0; 
+  list-style:none; 
+  font-size:14px; /* 小字 */
 }
 
-.sidebar summary {
-  cursor:pointer;
-  font-size:12px;
-  padding:2px 4px;
-  border-radius:6px;
-  user-select:none;
-  color:#444;
-  list-style:none;
+.sidebar ul li { 
+  margin-bottom:6px; 
 }
 
-.sidebar summary:hover {
-  background-color: rgba(0,120,215,0.1);
-  color:#0078D7;
+.sidebar ul li a { 
+  cursor:pointer; 
+  color:#333; 
+  text-decoration:none; 
+  display:block; 
+  padding:3px 6px;
+  border-radius:8px; 
+  transition: background-color 0.2s;
 }
 
-.sidebar ul {
-  list-style:none;
-  padding-left:10px;
-  margin:0;
+.sidebar ul li a:hover, .sidebar ul li a.active { 
+  color:#0078D7; 
+  background-color: rgba(0,120,215,0.1); 
 }
 
-.sidebar ul li a {
-  text-decoration:none;
-  display:block;
-  font-size:12px;
-  padding:2px 4px;
-  border-radius:6px;
-  color:#444;
-}
-
-.sidebar ul li a:hover {
-  background-color: rgba(0,120,215,0.1);
-  color:#0078D7;
-}
+/* 子分类缩进 */
+.sidebar ul li ul { margin-left:10px; }
 </style>
 </head>
 <body>
@@ -148,11 +137,7 @@ function createSnow(){
 }
 setInterval(createSnow,150);
 
-// tab 切换
-const buttons = document.querySelectorAll('.tab-btn');
-const contents = document.querySelectorAll('.tab-content');
-const loadedTabs = {};
-
+// ❄ 随机头图
 const headerImages = [
   "Content/Images/header-image-1.png","Content/Images/header-image-2.png",
   "Content/Images/header-image-3.png","Content/Images/header-image-4.png",
@@ -165,6 +150,11 @@ if(headerEl && headerImages.length){
   const idx = Math.floor(Math.random() * headerImages.length);
   headerEl.style.backgroundImage = `url('${headerImages[idx]}')`;
 }
+
+// tab 切换
+const buttons = document.querySelectorAll('.tab-btn');
+const contents = document.querySelectorAll('.tab-content');
+const loadedTabs = {};
 
 function openTab(tabId){
   contents.forEach(c=>c.classList.remove('active'));
@@ -196,43 +186,76 @@ function loadTabHTML(tabId){
     .catch(err=>{ document.getElementById(tabId).innerHTML="<p>加载失败……</p>"; });
 }
 
-// 生成折叠目录
+// 生成折叠目录（保留多级折叠 + 滚动高亮）
 function generateSidebarTOC(tabId){
   const toc = document.getElementById('toc');
   toc.querySelectorAll('li:not(:first-child)').forEach(li=>li.remove());
   const tabContent = document.getElementById(tabId);
-  
+
   setTimeout(()=>{
     const detailsList = tabContent.querySelectorAll('details[data-toc]');
     detailsList.forEach(details=>{
-      const det = document.createElement('details');
-      const summary = document.createElement('summary');
-      summary.textContent = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
-      det.appendChild(summary);
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href="javascript:void(0)";
+      a.textContent = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
+      a.addEventListener('click', ()=>{
+        details.open = true;
+        let parent = details.parentElement;
+        while(parent){ if(parent.tagName==='DETAILS') parent.open=true; parent=parent.parentElement; }
+        const rect = details.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
+      });
+      li.appendChild(a);
 
-      const childSummaries = details.querySelectorAll(':scope > details summary');
-      if(childSummaries.length){
-        const ul = document.createElement('ul');
-        childSummaries.forEach(s=>{
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.href="javascript:void(0)";
-          a.textContent = s.parentElement.getAttribute('data-toc') || s.textContent;
-          a.addEventListener('click', ()=>{
-            let parent = s.parentElement;
-            while(parent){ if(parent.tagName==='DETAILS') parent.open = true; parent = parent.parentElement; }
-            const rect = s.parentElement.getBoundingClientRect();
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
+      const innerDetails = details.querySelectorAll('details summary');
+      if(innerDetails.length){
+        const subUl = document.createElement('ul');
+        innerDetails.forEach(s=>{
+          const subLi = document.createElement('li');
+          const subA = document.createElement('a');
+          subA.href="javascript:void(0)";
+          subA.textContent = s.parentElement.getAttribute('data-toc') || s.textContent;
+          subA.addEventListener('click',()=>{
+            s.parentElement.open = true;
+            let parent2 = s.parentElement.parentElement;
+            while(parent2){ if(parent2.tagName==='DETAILS') parent2.open=true; parent2=parent2.parentElement; }
+            const rect2 = s.parentElement.getBoundingClientRect();
+            const scrollTop2 = window.pageYOffset || document.documentElement.scrollTop;
+            window.scrollTo({top: rect2.top + scrollTop2 - 20, behavior:'smooth'});
           });
-          li.appendChild(a);
-          ul.appendChild(li);
+          subLi.appendChild(subA);
+          subUl.appendChild(subLi);
         });
-        det.appendChild(ul);
+        li.appendChild(subUl);
       }
 
-      toc.appendChild(det);
+      toc.appendChild(li);
     });
+
+    const links = toc.querySelectorAll('a');
+    function highlightCurrent(){
+      let fromTop = window.scrollY + 50;
+      links.forEach(link=>{
+        const targetText = link.textContent;
+        let targetEl = [...tabContent.querySelectorAll('summary')].find(s=>s.textContent===targetText);
+        if(targetEl){
+          const rect = targetEl.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const top = rect.top + scrollTop;
+          if(fromTop >= top && fromTop < top + rect.height){
+            link.classList.add('active');
+            let parent = targetEl.parentElement;
+            while(parent){ if(parent.tagName==='DETAILS') parent.open=true; parent=parent.parentElement; }
+          } else {
+            link.classList.remove('active');
+          }
+        }
+      });
+    }
+    window.addEventListener('scroll', highlightCurrent);
+    highlightCurrent();
   },100);
 }
 
