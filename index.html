@@ -196,33 +196,38 @@ function generateSidebarTOC(tabId){
   const tabContent = document.getElementById(tabId);
 
   setTimeout(()=>{
-    const parents = tabContent.querySelectorAll('details[data-toc-type="parent"]');
-    parents.forEach(parent=>{
+    const topLevelDetails = tabContent.querySelectorAll(':scope > details[data-toc-type="parent"]');
+    topLevelDetails.forEach(details=>{
       const li = document.createElement('li');
       const parentA = document.createElement('a');
       parentA.href = 'javascript:void(0)';
-      parentA.textContent = parent.getAttribute('data-toc');
+      parentA.textContent = details.getAttribute('data-toc') || details.querySelector('summary').textContent;
       parentA.style.fontWeight = 'bold';
-
-      const childUl = document.createElement('ul');
-      parent.querySelectorAll('details[data-toc-type="child"]').forEach(child=>{
-        const subLi = document.createElement('li');
-        const subA = document.createElement('a');
-        subA.href = 'javascript:void(0)';
-        subA.textContent = child.getAttribute('data-toc');
-        subA.addEventListener('click', ()=>{
-          const rect = child.getBoundingClientRect();
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
-        });
-        subLi.appendChild(subA);
-        childUl.appendChild(subLi);
-      });
-
       li.appendChild(parentA);
-      li.appendChild(childUl);
 
-      parentA.addEventListener('click', ()=>{ childUl.classList.toggle('expanded'); });
+      const childDetails = details.querySelectorAll(':scope > .article-section > details[data-toc-type="child"]');
+      if(childDetails.length){
+        const subUl = document.createElement('ul');
+        subUl.style.display = 'none';
+        childDetails.forEach(child=>{
+          const subLi = document.createElement('li');
+          const subA = document.createElement('a');
+          subA.href = 'javascript:void(0)';
+          subA.textContent = child.getAttribute('data-toc') || child.querySelector('summary').textContent;
+          subA.addEventListener('click', ()=>{
+            // 展开父项和子项
+            details.open = true;
+            child.open = true;
+            const rect = child.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
+          });
+          subLi.appendChild(subA);
+          subUl.appendChild(subLi);
+        });
+        li.appendChild(subUl);
+        parentA.addEventListener('click', ()=>{ subUl.classList.toggle('expanded'); });
+      }
 
       toc.appendChild(li);
     });
