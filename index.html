@@ -196,7 +196,15 @@ function generateSidebarTOC(tabId){
       a.textContent = summary.parentElement.getAttribute('data-toc') || summary.textContent;
       a.addEventListener('click',()=>{
         const details = summary.parentElement;
-        details.open = true;
+
+        // 自动展开所有父折叠栏
+        let parent = details.parentElement;
+        while(parent){
+          if(parent.tagName==='DETAILS') parent.open = true;
+          parent = parent.parentElement;
+        }
+
+        // 平滑滚动到目标
         const rect = details.getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         window.scrollTo({top: rect.top + scrollTop - 20, behavior:'smooth'});
