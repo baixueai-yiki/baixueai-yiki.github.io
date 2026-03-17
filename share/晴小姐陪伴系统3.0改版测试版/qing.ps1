@@ -251,6 +251,8 @@ $global:lastRandomTrigger = $null
 $global:RandomTriggerHour = $null
 $global:RandomTriggerMinute = $null
 $global:LastGuardStart = [datetime]::MinValue
+$global:LastInteractTime = Get-Date
+$global:LastProactiveTime = Get-Date
 $global:StoryLibrary = @(
     "从前呀 有位英勇帅气的王子
     他听说在遥远的血腥之地的深处困着可怜可爱的晴小姐
@@ -549,6 +551,7 @@ function Show-ResidentDialog {
 
             # 点击事件
             $pictureBox.Add_Click({
+                $global:LastInteractTime = Get-Date   # ⭐新增：记录互动时间
                 # 随机播放点击音效
                 $sounds = @("poke_poke.wav", "poke_ah.wav", "poke_nya.wav", "poke_find.wav")  # 可以扩展更多
                 $randSound = Get-Random -InputObject $sounds
@@ -586,142 +589,6 @@ function Show-ResidentDialog {
 
 # =========「自启动功能模块」=============
 # 设置开机自启 - 设置开机自启动（计划任务/启动文件夹）。
-function Register-AutoStart {
-    try {
-        $taskName = "晴小姐陪伴系统"
-        $currentExe = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
-        $isExe = $currentExe -and [System.IO.Path]::GetExtension($currentExe).ToLower() -eq ".exe"
-        $scriptPath = if ($isExe) { $currentExe } elseif ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
-        
-        if (-not $scriptPath -or -not (Test-Path $scriptPath)) {
-            return $false
-        }
-        
-        $scriptDir = Split-Path $scriptPath -Parent
-        $batPath = Join-Path $scriptDir "晴小姐启动器.bat"
-        
-        if ($isExe) {
-            "@echo off`r`nstart /min `"$scriptPath`"`r`n" | Out-File -FilePath $batPath -Encoding ASCII
-        } else {
-            "@echo off`r`nstart /min powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath`"`r`n" | Out-File -FilePath $batPath -Encoding ASCII
-        }
-        
-        try {
-            $action = New-Object -ComObject Schedule.Service
-            $action.Connect()
-            $rootFolder = $action.GetFolder("\")
-            
-            try { $rootFolder.DeleteTask($taskName, 0) } catch {}
-            
-            $taskDefinition = $action.NewTask(0)
-            $taskDefinition.RegistrationInfo.Description = "晴小姐陪伴系统开机启动"
-            
-            $triggers = $taskDefinition.Triggers
-            $trigger = $triggers.Create(9)
-            $trigger.Enabled = $true
-            
-            $settings = $taskDefinition.Settings
-            $settings.Enabled = $true
-            $settings.StartWhenAvailable = $true
-            $settings.Hidden = $false
-            
-            $principal = $taskDefinition.Principal
-            $principal.LogonType = 3
-            
-            $execAction = $taskDefinition.Actions.Create(0)
-            $execAction.Path = $batPath
-            
-            $rootFolder.RegisterTaskDefinition($taskName, $taskDefinition, 6, $null, $null, 3)
-            return $true
-        } catch {
-            Write-CuteHost "计划任务创建失败: $_" -ForegroundColor Yellow
-        }
-        
-        try {
-            $startupPath = [Environment]::GetFolderPath("Startup")
-            $shortcutPath = Join-Path $startupPath "晴小姐陪伴系统.lnk"
-            
-            $WScriptShell = New-Object -ComObject WScript.Shell
-            $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
-            $shortcut.TargetPath = "powershell.exe"
-            $shortcut.Arguments = "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath`""
-            $shortcut.WorkingDirectory = $scriptDir
-            $shortcut.Save()
-            
-            return $true
-        } catch {
-            Write-CuteHost "启动文件夹创建失败: $_" -ForegroundColor Yellow
-        }
-        
-        throw "所有启动方法均失败"
-    } catch {
-        Write-CuteHost "开机启动设置失败: $_" -ForegroundColor Red
-        return $false
-    }
-}
-
-# =========「守护计划任务模块」=============
-# 注册守护计划任务 - 注册 芝芝.exe 的计划任务（登录时启动）。
-function Register-GuardTask {
-    param([string]$TaskName, [string]$ExePath)
-    try {
-        if (-not (Test-IsAdmin)) { return $false }
-        if (-not (Test-Path $ExePath)) { return $false }
-        $taskCmd = "`"$ExePath`""
-        & schtasks /Create /F /SC ONLOGON /TN $TaskName /TR $taskCmd | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            Write-CuteHost "守护计划任务创建失败（返回码 $LASTEXITCODE）" -ForegroundColor Yellow
-            return $false
-        }
-        return $true
-    } catch {
-        Write-CuteHost "守护计划任务创建失败: $_" -ForegroundColor Yellow
-        return $false
-    }
-}
-
-# 启动守护计划任务 - 触发计划任务立即运行。
-function Start-GuardTask {
-    param([string]$TaskName)
-    try {
-        if (-not (Test-IsAdmin)) { return $false }
-        & schtasks /Query /TN $TaskName | Out-Null
-        if ($LASTEXITCODE -ne 0) { return $false }
-        & schtasks /Run /TN $TaskName | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            Write-CuteHost "守护计划任务启动失败（返回码 $LASTEXITCODE）" -ForegroundColor Yellow
-            return $false
-        }
-        # 删除任务（已禁用）：保持任务长期存在，避免下次无法触发
-        # Start-Sleep -Seconds 60
-        # & schtasks /Delete /TN $TaskName /F | Out-Null
-        return $true
-    } catch {
-        Write-CuteHost "守护计划任务启动失败: $_" -ForegroundColor Yellow
-        return $false
-    }
-}
-
-# 检测守护程序是否在运行 - 通过进程路径匹配 芝芝.exe。
-function Test-GuardRunning {
-    param([string]$ExePath)
-    try {
-        $proc = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $ExePath }
-        if ($null -ne $proc) { return $true }
-        # Path 取不到时，退化为按进程名判断
-        $name = [System.IO.Path]::GetFileNameWithoutExtension($ExePath)
-        if (-not [string]::IsNullOrWhiteSpace($name)) {
-            $procByName = Get-Process -Name $name -ErrorAction SilentlyContinue
-            return ($null -ne $procByName)
-        }
-        return $false
-    } catch {
-        return $false
-    }
-}
-
-# =========「主循环模块」=============
-# 启动主循环 - 主循环入口：初始化、启动窗体并循环处理。
 function Start-QingMiss {
     if (-not (Test-DesktopReady)) {
         Show-SafeMessage "系统桌面尚未准备好，将在5秒后启动..."
@@ -734,14 +601,13 @@ function Start-QingMiss {
     # 启动时执行人格更新与特殊对话
     Invoke-PersonaStartupUpdate
     Invoke-StartupDialog
-
     Start-BootDialog
 
     # 注册并启动守护计划任务（仅管理员模式）
     $global:GuardTaskReady = $false
     $global:GuardTaskErrorShown = $false
     if (-not (Test-IsAdmin)) {
-        # 非管理员模式下静默跳过守护注册与重启
+        # 非管理员模式下静默跳过
     } elseif (Test-Path $global:GuardExePath) {
         try {
             $global:GuardTaskReady = Register-GuardTask -TaskName $global:GuardTaskName -ExePath $global:GuardExePath
@@ -753,64 +619,92 @@ function Start-QingMiss {
             }
         } catch {}
     } else {
-        Write-CuteHost "警告：找不到守护程序 芝芝.exe，主程序将直接运行，可能无法自动重启" -ForegroundColor Yellow
+        Write-CuteHost "警告：找不到守护程序 芝芝.exe，主程序将直接运行" -ForegroundColor Yellow
     }
 
-    
-    while($global:KeepRunning) {
+    # ⭐ 主循环（你刚刚少的就是这个）
+    while ($global:KeepRunning) {
+
         if ($null -ne $global:ResidentForm -and !$global:ResidentForm.IsDisposed) {
             [System.Windows.Forms.Application]::DoEvents()
         }
 
         $currentTime = Get-Date
-        if ($currentTime.Second -eq 0) {
-            # 每分钟触发随机对话判定
+        $currentMinute = $currentTime.Minute
+
+        if ($global:lastCheckedMinute -ne $currentMinute) {
+            $global:lastCheckedMinute = $currentMinute
+
+            # ===== 每小时随机触发 =====
             if ($null -eq $global:RandomTriggerHour -or $currentTime.Hour -ne $global:RandomTriggerHour) {
                 $global:RandomTriggerHour = $currentTime.Hour
                 $global:RandomTriggerMinute = Get-Random -Minimum 0 -Maximum 60
                 $global:lastRandomTrigger = $null
             }
-            if ($currentTime.Minute -ge $global:RandomTriggerMinute -and ($null -eq $global:lastRandomTrigger -or $currentTime.Hour -ne $global:lastRandomTrigger.Hour)) {
+
+            if ($currentMinute -ge $global:RandomTriggerMinute -and ($null -eq $global:lastRandomTrigger -or $currentTime.Hour -ne $global:lastRandomTrigger.Hour)) {
                 Start-RandomDialog
+
+                # 80%锁定，20%继续随机
                 if ((Get-Random -Maximum 100) -gt 20) {
                     $global:lastRandomTrigger = $currentTime
                 } else {
-                    if ($currentTime.Minute -lt 59) {
-                        $global:RandomTriggerMinute = Get-Random -Minimum ($currentTime.Minute + 1) -Maximum 60
+                    if ($currentMinute -lt 59) {
+                        $global:RandomTriggerMinute = Get-Random -Minimum ($currentMinute + 1) -Maximum 60
                     }
                 }
+            }
+
+            # ===== 主动搭话系统 =====
+            $idleMinutes = (New-TimeSpan -Start $global:LastInteractTime -End $currentTime).TotalMinutes
+            $sinceLastTalk = (New-TimeSpan -Start $global:LastProactiveTime -End $currentTime).TotalMinutes
+
+            if ($sinceLastTalk -ge 3) {
+                $chance = [math]::Min(20 + $idleMinutes * 5, 80)
+
+                if ((Get-Random -Maximum 100) -lt $chance) {
+
+                    $lines = @()
+
+                    if ($idleMinutes -lt 5) {
+                        $lines = @("在忙吗？","我在哦…")
+                    }
+                    elseif ($idleMinutes -lt 15) {
+                        $lines = @("好久没理我了…","有点无聊呢…")
+                    }
+                    else {
+                        $lines = @("…你是不是忘了我了","可以陪我一下吗…")
+                    }
+
+                    Show-SafeMessage (Get-Random $lines)
+                    $global:LastProactiveTime = $currentTime
+                }
+            }
+
+            # ===== 守护检测 =====
+            if (Test-IsAdmin) {
+                try {
+                    if (-not (Test-GuardRunning -ExePath $global:GuardExePath)) {
+                        if ((Get-Date) - $global:LastGuardStart -lt [TimeSpan]::FromSeconds(10)) {
+                            continue
+                        }
+                        if ($global:GuardTaskReady) {
+                            if (-not (Start-GuardTask -TaskName $global:GuardTaskName)) {
+                                Start-Process -FilePath $global:GuardExePath | Out-Null
+                            }
+                        } elseif (-not $global:GuardTaskErrorShown) {
+                            Write-CuteHost "提示：守护任务不可用，请以管理员运行一次" -ForegroundColor Yellow
+                            $global:GuardTaskErrorShown = $true
+                        }
+                        $global:LastGuardStart = Get-Date
+                    }
+                } catch {}
             }
         }
 
-        # 每秒检测守护程序是否在运行（仅管理员模式）
-        if (Test-IsAdmin) {
-            try {
-                if (-not (Test-GuardRunning -ExePath $global:GuardExePath)) {
-                    if ((Get-Date) - $global:LastGuardStart -lt [TimeSpan]::FromSeconds(10)) {
-                        continue
-                    }
-                    if ($global:GuardTaskReady) {
-                        if (-not (Start-GuardTask -TaskName $global:GuardTaskName)) {
-                            Start-Process -FilePath $global:GuardExePath | Out-Null
-                        }
-                    } elseif (-not $global:GuardTaskErrorShown) {
-                        Write-CuteHost "提示：守护计划任务不可用，请以管理员身份运行一次以完成注册。" -ForegroundColor Yellow
-                        $global:GuardTaskErrorShown = $true
-                    }
-                    $global:LastGuardStart = Get-Date
-                }
-            } catch {}
-        }
-        
-        for ($i = 0; $i -lt 60 -and $global:KeepRunning; $i++) {
-            if ($null -ne $global:ResidentForm -and !$global:ResidentForm.IsDisposed) {
-                [System.Windows.Forms.Application]::DoEvents()
-            }
-            Start-Sleep -Milliseconds 1000
-        }
+        Start-Sleep -Milliseconds 200
     }
 }
-
 # =========「交互对话框模块」=============
 # 显示交互对话框 - 显示带选项的对话弹窗并回调选择。
 function Show-InteractiveDialog {
@@ -851,7 +745,7 @@ function Show-InteractiveDialog {
             $buttonY += $buttonHeight + 10
         }
         
-        $result = $form.ShowDialog()
+        $result = $form.ShowDialog() #这里赋值用来记录用户点了什么选项，但后面没用到
         $selectedIndex = $form.Tag
         
         if ($null -ne $Callback -and $null -ne $selectedIndex) {
