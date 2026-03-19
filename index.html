@@ -288,14 +288,38 @@ document.addEventListener('mousemove', (e) => {
 
 // 桌宠左上角 - 点击播放 20 帧动画
 const pet = document.getElementById('desktop-pet');
-pet.style.backgroundImage = "url('Content/Icon/cat1.gif')"; // 平时 GIF
+const idleGif = "Content/Icon/cat1.gif";  // 平时 GIF
+const animGif = "Content/Icon/cat.gif";   // 点击播放 GIF
 
-pet.addEventListener('click', () => {
-    pet.style.backgroundImage = "url('Content/Icon/cat.gif')"; // 点击动画
-    // 假设 cat.gif 播放 1 秒
-    setTimeout(() => {
-        pet.style.backgroundImage = "url('Content/Icon/cat1.gif')";
-    }, 1000);
+pet.style.backgroundImage = `url('${idleGif}')`;
+
+// 辅助函数：获取 GIF 总时长（毫秒）
+async function getGifDuration(url){
+    const resp = await fetch(url);
+    const buffer = await resp.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let duration = 0;
+    for(let i=0;i<bytes.length-9;i++){
+        // Graphic Control Extension: 0x21, 0xF9, 0x04
+        if(bytes[i]===0x21 && bytes[i+1]===0xF9 && bytes[i+2]===0x04){
+            let delay = bytes[i+4] + (bytes[i+5]<<8); // 单位: 1/100 秒
+            duration += delay*10; // 转为毫秒
+        }
+    }
+    return duration || 1000; // 默认 1 秒
+}
+
+pet.addEventListener('click', async ()=>{
+    pet.style.backgroundImage = `url('${animGif}')`;
+
+    if(pet._resetTimeout) clearTimeout(pet._resetTimeout);
+
+    const animDuration = await getGifDuration(animGif);
+
+    pet._resetTimeout = setTimeout(()=>{
+        pet.style.backgroundImage = `url('${idleGif}')`;
+        pet._resetTimeout = null;
+    }, animDuration);
 });
 </script>
 </body>
