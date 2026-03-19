@@ -99,6 +99,21 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 .sidebar ul li ul.expanded {
   display: block;
 }
+
+/* 桌宠左上角 */
+.desktop-pet {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 80px;
+    height: 80px;
+    background-image: url('Content/Icon/carrot.png'); /* 替换成你的桌宠图片 */
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    z-index: 9999;
+    transition: transform 0.2s;
+}
 </style>
 </head>
 <body>
@@ -127,19 +142,7 @@ body { font-family: 'Segoe UI', sans-serif; margin:0; background-color: #f5f5f5;
 <div id="tab4" class="tab-content"></div>
 
 <!-- 桌宠左上角 -->
-<div id="desktop-pet" style="
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    width: 80px;
-    height: 80px;
-    background-image: url('Content/Icon/carrot.png'); /* 替换成你的桌宠图片 */
-    background-size: contain;
-    background-repeat: no-repeat;
-    cursor: pointer;
-    z-index: 9999;
-    transition: transform 0.2s;
-"></div>
+<div id="desktop-pet" class="desktop-pet"></div>
 
 <script>
 // ❄ 下雪效果
