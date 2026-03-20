@@ -22,7 +22,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         g_character = Bitmap::FromFile(L"character.png");// 从文件加载桌宠图片
         if (!g_character || g_character->GetLastStatus() != Ok)// 检查图片是否加载成功
         {
-            MessageBox(hwnd, L"图片加载失败", L"错误", MB_OK);
+            MessageBoxW(hwnd, L"图片加载失败", L"错误", MB_OK);
         }
         break;
     }
@@ -46,50 +46,44 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     // 鼠标右键按下时触发
     case WM_RBUTTONDOWN:
     {
-        // 获取当前时间（毫秒）
-        DWORD now = GetTickCount();
+        
+        DWORD now = GetTickCount();// 获取当前时间（毫秒）
 
-        // 将历史点击记录整体向前移动一位
-        for (int i = 0; i < 5; i++)
+        
+        for (int i = 0; i < 5; i++)// 将历史点击记录整体向前移动一位
             clickTimes[i] = clickTimes[i + 1];
 
-        // 记录最新一次点击时间
-        clickTimes[5] = now;
+        
+        clickTimes[5] = now;// 记录最新一次点击时间
 
         // 定义时间阈值（用于判断点击节奏）
         const int slowMax = 1000; // 慢节奏最大间隔
         const int fastMax = 300;  // 快节奏最大间隔
 
-        // 判断是否满足“慢三次点击”
-        bool slowTriple = (clickTimes[3] - clickTimes[0] <= slowMax);
+        
+        bool slowTriple = (clickTimes[3] - clickTimes[0] <= slowMax);// 判断是否满足“慢三次点击”
 
-        // 判断是否满足“快三次点击”
-        bool fastTriple = (clickTimes[5] - clickTimes[3] <= fastMax);
+        
+        bool fastTriple = (clickTimes[5] - clickTimes[3] <= fastMax);// 判断是否满足“快三次点击”
 
         // 如果两种节奏都满足，认为触发特殊操作
         if (slowTriple && fastTriple)
         {
-            // 清空点击记录，避免重复触发
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 6; i++) // 清空点击记录，避免重复触发
                 clickTimes[i] = 0;
-
-            // 调用聊天输入窗口（你在 Func/func_chat.h 里实现的）
-            ShowChatInput(hwnd);
+            ShowChatInput(hwnd);// 调用聊天输入窗口（你在 Func/func_chat.h 里实现的）
         }
         break;
     }
 
     // 窗口销毁时触发
     case WM_DESTROY:
-        // 释放图片资源，避免内存泄漏
-        if (g_character)
+        if (g_character)// 释放图片资源，避免内存泄漏
         {
             delete g_character;
             g_character = nullptr;
         }
-
-        // 通知系统退出消息循环
-        PostQuitMessage(0);
+        PostQuitMessage(0);// 通知系统退出消息循环
         break;
 
     // 默认消息处理（必须保留）
@@ -103,18 +97,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 // 程序入口（Unicode版本）
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int)
 {
-    // 初始化 GDI+
-    GdiplusStartupInput gdiplusStartupInput;
+    GdiplusStartupInput gdiplusStartupInput;// 初始化 GDI+
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
+    
     // 定义窗口类
     WNDCLASSW wc = {};
     wc.lpfnWndProc = WndProc;            // 指定窗口过程函数
     wc.hInstance = hInstance;            // 当前实例
     wc.lpszClassName = L"CharacterWindow"; // 窗口类名
 
-    // 注册窗口类
-    RegisterClassW(&wc);
+    RegisterClassW(&wc);// 注册窗口类
 
     // 创建窗口（桌宠窗口）
     hwndMain = CreateWindowExW(
