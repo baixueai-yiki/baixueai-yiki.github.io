@@ -99,7 +99,10 @@ if (Test-Path $exePath) {
 $appTaskName = "守护晴小姐"
 $restartAudioDir = Join-Path $scriptDir "sounds"
 $global:AudioPath = $restartAudioDir
-$restartAudioFiles = @("run_zhizhi1.wav","run_zhizhi2.wav","run_zhizhi3.wav")
+$global:GuardRestartScheduled = $false
+$global:NextGuardRestartTime = $null
+$global:GuardRestartSounds = @("zhizhi1.wav","zhizhi2.wav")
+$global:LastGuardCheckMinute = $null
 
 # -----------------------
 # 注册主程序计划任务 - 注册 晴小姐.exe 的计划任务（登录时启动）
@@ -172,26 +175,23 @@ function Invoke-Audio {
 }
 
 # 播放自动重启语音 - 仅在触发自动拉起时播放
-function Invoke-RestartAudio {
-    param([string]$AudioDir, [string[]]$AudioFiles)
+function Test-AppRunning {
     try {
-        if ($null -eq $AudioFiles -or $AudioFiles.Count -eq 0) { return }
-        $existing = @()
-        foreach ($f in $AudioFiles) {
-            $p = Join-Path $AudioDir $f
-            if (Test-Path $p) { $existing += $p }
-        }
-        if ($existing.Count -eq 0) {
-            if (-not $global:RestartAudioWarned) {
-                Write-CuteHost "提示：未找到重启语音文件，请检查 sounds 目录。" -ForegroundColor Yellow
-                $global:RestartAudioWarned = $true
-            }
-            return
-        }
-        $audioPath = Get-Random -InputObject $existing
-        $fileName = [System.IO.Path]::GetFileName($audioPath)
-        $global:AudioPlayer = Invoke-Audio -FileName $fileName -Async
-    } catch {}
+        $proc = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $targetPath }
+        return ($null -ne $proc)
+    } catch {
+        return $false
+    }
+}
+
+function Play-GuardRestartSound {
+    try {
+        if (-not $global:GuardRestartSounds -or $global:GuardRestartSounds.Count -eq 0) { return }
+        $sound = Get-Random -InputObject $global:GuardRestartSounds
+        Invoke-Audio -FileName $sound -Async
+    } catch {
+        Write-CuteHost "播放重启音效失败: $_" -ForegroundColor Yellow
+    }
 }
 
 # -----------------------
@@ -216,18 +216,41 @@ try {
 
 while ($true) {
     try {
-        # 每秒检测主程序，不在则通过计划任务拉起
-        $proc = Get-Process -ErrorAction SilentlyContinue | Where-Object { 
-            $_.Path -eq $targetPath 
+        $currentTime = Get-Date
+
+        if ($global:LastGuardCheckMinute -ne $currentTime.Minute) {
+            $global:LastGuardCheckMinute = $currentTime.Minute
+            if (-not (Test-AppRunning)) {
+                if (-not $global:GuardRestartScheduled) {
+                    $global:GuardRestartScheduled = $true
+                    $global:NextGuardRestartTime = $currentTime.AddMinutes(10)
+                    $nextTime = $global:NextGuardRestartTime.ToString("HH:mm")
+                    Write-CuteHost "晴小姐 当前未运行，将在 $nextTime 自动重启" -ForegroundColor Yellow
+                }
+            } else {
+                $global:GuardRestartScheduled = $false
+                $global:NextGuardRestartTime = $null
+            }
         }
 
-        if (-not $proc) {
-            Invoke-RestartAudio -AudioDir $restartAudioDir -AudioFiles $restartAudioFiles
-            if ($appTaskReady) {
-                Start-AppTask -TaskName $appTaskName | Out-Null
-            } elseif (-not $appTaskErrorShown) {
-                Write-CuteHost "提示：主程序计划任务不可用（可能缺少管理员权限）。" -ForegroundColor Yellow
-                $appTaskErrorShown = $true
+        if ($global:GuardRestartScheduled -and $global:NextGuardRestartTime -and (Get-Date) -ge $global:NextGuardRestartTime) {
+            try {
+                if (-not (Test-AppRunning)) {
+                    Play-GuardRestartSound
+                    if ($appTaskReady) {
+                        if (-not (Start-AppTask -TaskName $appTaskName)) {
+                            Start-Process -FilePath $targetPath | Out-Null
+                        }
+                    } elseif (-not $appTaskErrorShown) {
+                        Write-CuteHost "提示：主程序计划任务不可用（可能缺少管理员权限）。" -ForegroundColor Yellow
+                        $appTaskErrorShown = $true
+                    }
+                    $global:LastGuardStart = Get-Date
+                }
+            } catch {}
+            finally {
+                $global:GuardRestartScheduled = $false
+                $global:NextGuardRestartTime = $null
             }
         }
 
