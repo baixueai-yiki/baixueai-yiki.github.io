@@ -76,7 +76,8 @@ function Invoke-AdminElevation {
         return $true
     }
 
-    <#Add-Type -TypeDefinition @"
+    <# 我寻思明明已经把powershell窗口隐藏起来了啊，那这段是老代码？总之先注释掉
+    Add-Type -TypeDefinition @"
     using System;
     using System.Runtime.InteropServices;
     public class Win32 {
@@ -89,7 +90,8 @@ function Invoke-AdminElevation {
 
     $consolePtr = [Win32]::GetConsoleWindow()
     # 0 = 隐藏窗口
-    [Win32]::ShowWindow($consolePtr, 0)#>
+    [Win32]::ShowWindow($consolePtr, 0)
+    #>
 
     try {
         $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`""
@@ -253,6 +255,8 @@ $global:RandomTriggerMinute = $null
 $global:LastGuardStart = [datetime]::MinValue
 $global:LastInteractTime = Get-Date
 $global:LastProactiveTime = Get-Date
+$global:GuardRestartScheduled = $false
+$global:NextGuardRestartTime = $null
 $global:StoryLibrary = @(
     "从前呀 有位英勇帅气的王子
     他听说在遥远的血腥之地的深处困着可怜可爱的晴小姐
@@ -436,7 +440,8 @@ function Invoke-Audio {
     }
 }
 
-<#function Show-SafeMessage {
+<# 注释掉了一些影响代入感的输出内容
+function Show-SafeMessage {
     param([string]$Message)
     try {
         if ([System.Windows.Forms.MessageBox] -ne $null) {
@@ -587,6 +592,68 @@ function Show-ResidentDialog {
     }
 }
 
+# =========「守护任务辅助」============= 
+function Register-GuardTask {
+    param(
+        [string]$TaskName,
+        [string]$ExePath
+    )
+    try {
+        if (-not (Test-IsAdmin)) { return $false }
+        if (-not (Test-Path $ExePath)) { return $false }
+        $taskCmd = "`"$ExePath`""
+        & schtasks /Create /F /SC ONLOGON /TN $TaskName /TR $taskCmd | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-CuteHost "守护计划任务创建失败（返回码 $LASTEXITCODE）" -ForegroundColor Yellow
+            return $false
+        }
+        return $true
+    } catch {
+        Write-CuteHost "守护计划任务创建失败: $_" -ForegroundColor Yellow
+        return $false
+    }
+}
+
+function Start-GuardTask {
+    param([string]$TaskName)
+    try {
+        if (-not (Test-IsAdmin)) { return $false }
+        & schtasks /Query /TN $TaskName | Out-Null
+        if ($LASTEXITCODE -ne 0) { return $false }
+        & schtasks /Run /TN $TaskName | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-CuteHost "守护任务启动失败（返回码 $LASTEXITCODE）" -ForegroundColor Yellow
+            return $false
+        }
+        return $true
+    } catch {
+        Write-CuteHost "守护任务启动失败: $_" -ForegroundColor Yellow
+        return $false
+    }
+}
+
+function Test-GuardRunning {
+    param([string]$ExePath)
+    try {
+        if (-not (Test-Path $ExePath)) { return $false }
+        $proc = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $ExePath }
+        return ($null -ne $proc)
+    } catch {
+        return $false
+    }
+}
+
+function Play-GuardRestartSound {
+    try {
+        $guardRestartSounds = @("zhizhi1.wav","zhizhi2.wav")
+        if (-not $guardRestartSounds -or $guardRestartSounds.Count -eq 0) { return }
+        $sound = Get-Random -InputObject $guardRestartSounds
+        Invoke-Audio -FileName $sound -Async
+    } catch {
+        Write-CuteHost "播放重启音效失败: $_" -ForegroundColor Yellow
+    }
+}
+
 # =========「自启动功能模块」=============
 # 设置开机自启 - 设置开机自启动（计划任务/启动文件夹）。
 function Start-QingMiss {
@@ -642,6 +709,7 @@ function Start-QingMiss {
                 $global:lastRandomTrigger = $null
             }
 
+            $randomTriggeredThisMinute = $false
             if ($currentMinute -ge $global:RandomTriggerMinute -and ($null -eq $global:lastRandomTrigger -or $currentTime.Hour -ne $global:lastRandomTrigger.Hour)) {
                 Start-RandomDialog
 
@@ -653,9 +721,11 @@ function Start-QingMiss {
                         $global:RandomTriggerMinute = Get-Random -Minimum ($currentMinute + 1) -Maximum 60
                     }
                 }
+                $randomTriggeredThisMinute = $true
             }
 
             # ===== 主动搭话系统 =====
+            <# 过于缺爱感、病娇，优化之前先注释掉
             $idleMinutes = (New-TimeSpan -Start $global:LastInteractTime -End $currentTime).TotalMinutes
             $sinceLastTalk = (New-TimeSpan -Start $global:LastProactiveTime -End $currentTime).TotalMinutes
 
@@ -680,14 +750,29 @@ function Start-QingMiss {
                     $global:LastProactiveTime = $currentTime
                 }
             }
+            #>
 
             # ===== 守护检测 =====
-            if (Test-IsAdmin) {
+            if ($randomTriggeredThisMinute -and (Test-IsAdmin)) {
                 try {
                     if (-not (Test-GuardRunning -ExePath $global:GuardExePath)) {
-                        if ((Get-Date) - $global:LastGuardStart -lt [TimeSpan]::FromSeconds(10)) {
-                            continue
+                        if (-not $global:GuardRestartScheduled) {
+                            $global:GuardRestartScheduled = $true
+                            $global:NextGuardRestartTime = (Get-Date).AddMinutes(10)
+                            #$nextTime = $global:NextGuardRestartTime.ToString("HH:mm")
+                            #Write-CuteHost "芝芝 当前未运行，将在 $nextTime 自动重启" -ForegroundColor Yellow
                         }
+                    } else {
+                        $global:GuardRestartScheduled = $false
+                        $global:NextGuardRestartTime = $null
+                    }
+                } catch {}
+            }
+
+            if ($global:GuardRestartScheduled -and $global:NextGuardRestartTime -and (Get-Date) -ge $global:NextGuardRestartTime -and (Test-IsAdmin)) {
+                try {
+                    if (-not (Test-GuardRunning -ExePath $global:GuardExePath)) {
+                        Play-GuardRestartSound
                         if ($global:GuardTaskReady) {
                             if (-not (Start-GuardTask -TaskName $global:GuardTaskName)) {
                                 Start-Process -FilePath $global:GuardExePath | Out-Null
@@ -699,6 +784,10 @@ function Start-QingMiss {
                         $global:LastGuardStart = Get-Date
                     }
                 } catch {}
+                finally {
+                    $global:GuardRestartScheduled = $false
+                    $global:NextGuardRestartTime = $null
+                }
             }
         }
 
@@ -773,21 +862,6 @@ function Show-InteractiveDialog {
 # =========「对话场景实现」=============
 # 开机对话 - 开机首次对话与分支处理。
 function Start-BootDialog {
-    <# 音效列表
-    $sounds = @("run_take_care_me.wav","run_fondle_me.wav","run_not_worry1.wav","run_not_worry2.wav","other.wav")
-    # 特殊音效列表
-    $specialSounds = @("run_not_worry1.wav","run_not_worry2.wav")
-    # 随机选一个
-    $sel = Get-Random $sounds
-    Invoke-Audio $sel -Async
-    # 如果是特殊音效，则按概率播放指定音效
-    if ($specialSounds -contains $sel) {
-        $chance = 0.5  # 50%概率
-        if ((Get-Random -Minimum 0 -Maximum 1) -lt $chance) {
-            Start-Sleep 2
-            Invoke-Audio "run_but.wav" -Async
-        }
-    }#>
     # 音效列表  
     $sounds = @("run_take_care_me.wav","run_fondle_me.wav","run_not_worry1.wav","run_not_worry2.wav","run_not_worry1_but.wav","run_not_worry2_but.wav")
     # 随机选一个
