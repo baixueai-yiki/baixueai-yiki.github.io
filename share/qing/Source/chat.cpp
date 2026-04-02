@@ -1,8 +1,9 @@
-﻿#include "chat.h"
+#include "chat.h"
 #include <iostream>
 
+// 负责将聊天消息写入日志/输出，当前只是打印到控制台
+// 你可以在这里接入网络、AI、或者展示到 UI 上
 void SendChat(const char* msg)
 {
-    // 这里只是示例，后面可以接AI/文本系统
     std::cout << msg << std::endl;
 }

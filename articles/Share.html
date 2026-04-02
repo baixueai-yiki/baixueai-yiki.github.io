@@ -26,6 +26,82 @@
 </details>
 </div>
 
+<div class="article-section">
+<details data-toc="c++桌宠" data-toc-type="child">
+<summary><strong>如何用c++写一个桌宠</strong></summary>
+这是一个以学习为目的进行的项目，其中大部分代码由ai编写，本人不享有知识产权
+<br>1. 首先需要安装一个 c++ 的开发环境，推荐使用 Visual Studio，下载地址：https://visualstudio.microsoft.com/zh-hans/downloads/
+<br>2. 安装完成后，打开 Visual Studio，选择创建一个新的项目，选择“控制台应用程序”，然后点击“下一步”
+<br>3. 输入项目名称和位置，然后点击“创建”。不过我这里用的是vs cord，没有创建项目这一步，是直接选择文件夹进行编辑的
+<br>4. 接下来，需要规划好项目的结构和设计方向。因为把代码全写在一个文件里会非常混乱，而且分好层也有利于区分功能。我这里是这样的结构：
+<br>Source/
+<br>├─ Core/               # 工具层、基础设施
+<br>│  ├─ TextFile.h/cpp       # 文本读取/写入、热更新
+<br>│  ├─ Path.h/cpp           # 路径工具
+<br>│  ├─ Timer.h/cpp          # 定时器工具
+<br>│  └─ Utils/               # 其他小工具类（JSON解析、日志等）
+<br>│
+<br>├─ Runtime/            # 调度层/中枢/事件系统
+<br>│  ├─ EventBus.h/cpp（负责模块间的消息发布与订阅）
+<br>│  ├─ Scheduler.h/cpp（定时器/调度器）
+<br>│  └─ StateManager.h/cpp（全局状态管理）
+<br>│
+<br>├─ Engine/             # 引擎层
+<br>│  ├─ Window/              # 窗口管理、消息循环
+<br>│  │  ├─ Window.h/cpp
+<br>│  │  └─ InputRouter.h/cpp
+<br>│  ├─ Render/              # 渲染逻辑
+<br>│  └─ Input/               # 输入事件
+<br>│     ├─ InputDispatcher.h/cpp
+<br>│     └─ InputChat.h/cpp
+<br>│
+<br>├─ Systems/            # 系统层
+<br>│  ├─ Pet/                 # 核心桌宠系统
+<br>│  │  ├─ PetActor.h/cpp    # PetActor + 状态、生命周期
+<br>│  │  └─ PetComponents/    # 桌宠组件
+<br>│  │     ├─ ChatComponent.h/cpp（桌宠发言）
+<br>│  │     ├─ AudioComponent.h/cpp（桌宠音频）
+<br>│  │     ├─ DiaryComponent.h/cpp（桌宠日记）
+<br>│  │     └─ InputComponent.h/cpp（输入文字）
+<br>│  │
+<br>│  ├─ UI/                   
+<br>│  │  ├─ UIActor.h/cpp     # UIActo
+<br>│  │  ├─ UIComponents/    # UI组件
+<br>│  │  │  ├─ CloseComponent.h/cpp（关闭界面）
+<br>│  │  │  ├─ ScrollComponent.h/cpp（滚轮滑动）
+<br>│  │  │  ├─ DragComponent.h/cpp （拖动窗口）
+<br>│  │  │  └─ InputComponent.h/cpp（输入文字）r
+<br>│  │  └─ UIPanels/         # UI界面
+<br>│  │     ├─ ChatPanels.h/cpp（聊天UI）
+<br>│  │     ├─ TaskPanels.h/cpp（任务UI）
+<br>│  │     ├─ SettingPanels.h/cpp（设置UI）
+<br>│  │     └─ OverlayPanels.h/cpp（浮层UI）
+<br>│  │
+<br>│  └─ Setting/             # 配置系统
+<br>│     ├─ Setting.h/cpp
+<br>│     └─ SettingWindowComponent.h/cpp
+<br>│
+<br>└─ Main/
+<br>   └─ main.cpp             # 启动入口
+<br>2. 仓库名称-背景设定-代码与自动化-页面（像网页的小图标）
+<br>3. 构建与部署-源-从分支部署
+<br>4. 分支-选择分支，默认是 main
+<br>5. 创建一个 index.html 文件，在里面编辑页面
+<br>6. 地址为 https://&lt;git用户名&gt;.github.io
+<br>剩下的界面优化自由发挥，不会的可以问 AI
+<br><a href="https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/index.html?raw=true" target="_blank">也可以下载我的，记得上传到自己的库里</a>
+<br>或者你也可以直接复制我的库，但要记得把库的名字改成自己的
+<br>1. 找到我的库 https://github.com/baixueai-yiki/baixueai-yiki.github.io
+<br>2. 在绿色的按钮上面，点中间这个分叉的按钮
+<br>3. 仓库名称填 &lt;自己的名字&gt;.github.io
+<br>4. 点击创建
+<br>下面是手机端的操作演示，示例用的是别人的 git 汉化项目，你也可以下载一个 <a href="https://maboloshi.github.io/github-chinese/" target="_blank">https://maboloshi.github.io/github-chinese/</a>
+<div style="display:flex; gap:10px;">
+    <img src="/Content/Images/github-io.jpg" alt="演示图" style="width:50%; height:auto;">
+</div>
+</details>
+</div>
+
 </details><!--正确或错误的教程-->
 
 
