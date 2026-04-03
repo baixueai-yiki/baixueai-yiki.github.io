@@ -33,7 +33,8 @@
 <br>1. 首先需要安装一个 c++ 的开发环境，推荐使用 Visual Studio，下载地址：https://visualstudio.microsoft.com/zh-hans/downloads/
 <br>2. 安装完成后，打开 Visual Studio，选择创建一个新的项目，选择“控制台应用程序”，然后点击“下一步”
 <br>3. 输入项目名称和位置，然后点击“创建”。不过我这里用的是vs cord，没有创建项目这一步，是直接选择文件夹进行编辑的
-<br>4. 接下来，需要规划好项目的结构和设计方向。因为把代码全写在一个文件里会非常混乱，而且分好层也有利于区分功能。我这里是这样的结构：
+<br>4. 接下来，需要规划好项目的结构和设计方向。因为把代码全写在一个文件里会非常混乱，而且分好层也有利于区分功能。
+<br>我这里是这样的结构：
 <br>Source/
 <br>├─ Core/               # 工具层、基础设施
 <br>│  ├─ TextFile.h/cpp       # 文本读取/写入、热更新
@@ -70,7 +71,8 @@
 <br>│  │  │  ├─ CloseComponent.h/cpp（关闭界面）
 <br>│  │  │  ├─ ScrollComponent.h/cpp（滚轮滑动）
 <br>│  │  │  ├─ DragComponent.h/cpp （拖动窗口）
-<br>│  │  │  └─ InputComponent.h/cpp（输入文字）r
+<br>│  │  │  └─ InputComponent.h/cpp（输入文字）
+<br>│  │  │
 <br>│  │  └─ UIPanels/         # UI界面
 <br>│  │     ├─ ChatPanels.h/cpp（聊天UI）
 <br>│  │     ├─ TaskPanels.h/cpp（任务UI）
