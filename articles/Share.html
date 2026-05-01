@@ -146,10 +146,56 @@ Source/
     └─ AppEntry.cpp # 程序入口（初始化系统、启动主循环）
 
 # 数据流
+主循环更新顺序（Tick Pipeline）
+InputDispatcher 捕获输入（鼠标 / 键盘事件）
+↓
+InputRouter 进行命中判断与输入分发（UI / Pet）
+↓
+EventBus 分发输入事件到已注册 Actor
+↓
+Actor 执行 OnEvent，并由状态机判断是否响应
+↓
+Scheduler 执行定时任务（延迟 / 周期事件触发）
+↓
+Actor 执行 Update（状态机驱动 Component 行为）
+↓
+Component 执行具体逻辑（移动 / 对话 / UI更新等）
+↓
+Renderer 根据最终状态进行绘制输出
+
+输入流转路径（Input → Actor）
+InputDispatcher 捕获鼠标/键盘等原始输入
+↓
+InputRouter 进行目标命中判断（UI 或 Pet）
+↓
+将输入转换为语义事件（如 Click / Drag / Input）
+↓
+通过 EventBus 发送至对应 Actor
+↓
+Actor 接收输入事件并进入 OnEvent 处理流程
+
+事件流转路径（EventBus → Actor → Component）
+事件由 EventBus 统一接收与分发
+↓
+已注册 Actor 接收对应事件
+↓
+Actor 状态机判断当前状态是否允许响应
+↓
+若允许执行，则由 Actor 转发至对应 Component
+↓
+Component 执行具体行为逻辑（不参与决策）
+
+渲染流转路径（State → Renderer）
+Actor 状态机维护当前行为状态（Idle / Moving / Talking 等）
+↓
+Component 根据状态更新位置、文本、动画等数据
+↓
+Renderer 读取最新状态数据
+↓
+将最终结果绘制到屏幕
+输入流负责事件生成，事件流负责行为决策与执行，渲染流负责最终视觉输出
 
 # 功能拆解
-功能拆解（标准流程版）
-
 1. 桌宠绘制与显示（渲染驱动）
 模块：Systems / Pet + Systems / UI + Engine / Render
 功能描述：负责桌宠与 UI 的持续绘制，是系统的最终输出阶段
@@ -298,6 +344,7 @@ UCloseComponent：调用系统接口关闭目标程序
 每个Actor都有自己的状态机和挂载的Component组件
 UIActor还挂载着各个UI界面Panels
 
+
 # 开发规则
 1.命名规范（以学习为目的，照搬虚幻引擎的命名规范）
 类名：使用 PascalCase（首字母大写，每个单词首字母大写）
@@ -330,10 +377,10 @@ Engine：封装操作系统接口，依赖 Core。
 Systems：业务逻辑，依赖 Core / Runtime / Engine，不被其他模块依赖。
 
 4.事件与状态机规则
-所有事件必须经过 EventBus 分发。
-程序运行时注册各 Actor；组件初始化时订阅事件。
-事件触发后，先到 Actor，再由 Actor 的状态机判断是否执行。
-组件不直接注册 EventBus，事件由 Actor 转发。
+程序初始化时，各 Actor 向 EventBus 注册自己所关心的事件
+程序运行时，当事件被触发后，统一进入 EventBus
+EventBus 根据注册关系将事件分发给对应的 Actor
+Actor 接收事件后，交由自身状态机判断是否执行
 
 5.组件职责规则
 每个组件只实现自身功能，不处理 Actor 以外的逻辑。
