@@ -1,0 +1,348 @@
+# 项目目标
+1.目的是学习软件的开发流程，构建一个高度模块化的桌宠系统
+2.使用订阅/分发模式（EventBus）控制事件，使用状态机控制对象（Actor）
+3.本项目包含：桌宠点击交互、对话、关闭用户程序等
+4.本项目不包含：网络功能、多角色支持、复杂 AI 系统
+5.本项目不以商业发布为目的，重点在于架构设计与开发流程验证。
+
+# 模块划分
+Core（工具层）
+职责：
+-提供基础工具
+-提供通用工具类
+非职责：
+-不包含任何业务逻辑
+依赖关系：
+-不依赖任何模块
+-被任何模块依赖
+
+Runtime（通信层）
+职责：
+-事件订阅系统EventBus
+-定时调度系统Scheduler
+-全局状态管理StateManager
+非职责：
+-不包含任何业务逻辑
+依赖关系：
+-依赖Core
+-被Systems依赖
+
+Engine（底层引擎封装）
+职责：
+- 封装窗口系统、输入系统、渲染
+- 提供与操作系统交互的能力
+非职责：
+-不包含任何业务逻辑
+依赖关系：
+-依赖Core
+-被Systems依赖
+
+Systems（业务层）
+职责：
+- 实现具体业务逻辑（桌宠、UI、设置等）
+非职责：
+- 不实现底层工具
+- 不处理操作系统级功能
+依赖关系：
+-依赖Core / Runtime / Engine
+-不被任何模块依赖
+
+# 目录结构
+Source/
+├─ Core/ # 工具层、基础设施（无业务逻辑）
+│  ├─ TextFile.h/cpp # 文本读取/写入、简单热更新支持
+│  ├─ Path.h/cpp # 路径处理（拼接、解析、获取程序目录等）
+│  ├─ Timer.h/cpp # 基础计时工具（时间间隔、时间戳）
+│  ├─ JsonHelper.h/cpp # JSON解析与序列化工具
+│  ├─ Logger.h/cpp # 日志系统（输出到控制台/文件）
+│
+├─ Runtime/ # 协议层/中枢（无具体业务）
+│  ├─ Event/
+│  │   └─ EventBus.h/cpp # 事件发布/订阅中心（模块通信核心）
+│  ├─ Schedule/
+│  │   └─ Scheduler.h/cpp # 定时任务调度（延迟/循环任务）
+│  └─ State/
+│      └─ StateManager.h/cpp # 全局状态管理（全局开关/配置）
+│
+├─ Engine/ # 系统层（操作系统交互）
+│  ├─ Window/
+│  │   ├─ Window.h/cpp # 窗口创建、销毁、主循环管理
+│  │   └─ InputRouter.h/cpp # 输入路由（分发到UI或Pet）
+│  ├─ Render/
+│  │   └─ Renderer.h/cpp # 渲染接口封装（绘制图片/UI）
+│  └─ Input/
+│      ├─ InputDispatcher.h/cpp # 输入捕获（鼠标/键盘事件）
+│      └─ InputChat.h/cpp # 文本输入处理（键盘输入解析）
+│
+├─ Systems/ # 业务层（核心逻辑）
+│  ├─ Pet/ # 桌宠系统
+│  │   ├─ APetActor.h/cpp # 桌宠核心对象（状态机+组件管理）
+│  │   ├─ Components/ # 桌宠功能组件
+│  │   │   ├─ UChatComponent.h/cpp # 控制桌宠对话内容显示
+│  │   │   ├─ UAudioComponent.h/cpp # 控制音效播放
+│  │   │   ├─ UDiaryComponent.h/cpp # 写入桌宠日志/日记
+│  │   │   └─ UInputComponent.h/cpp # 处理用户输入内容
+│  │   └─ Render/
+│  │       └─ UPetRenderComponent.h/cpp # 桌宠绘制（位置/贴图/动画）
+│  │
+│  ├─ UI/ # UI系统
+│  │   ├─ AUIActor.h/cpp # UI核心对象（管理所有UI界面）
+│  │   ├─ Components/ # UI行为组件（交互逻辑）
+│  │   │   ├─ UCloseComponent.h/cpp # 关闭按钮行为（关闭程序）
+│  │   │   ├─ UScrollComponent.h/cpp # 滚动处理（列表/界面滚动）
+│  │   │   ├─ UDragComponent.h/cpp # 拖动窗口/界面
+│  │   │   └─ UInputComponent.h/cpp # UI输入框处理
+│  │   └─ Panels/ # UI界面（结构与渲染）
+│  │       ├─ UChatPanel.h/cpp # 聊天界面（显示对话）
+│  │       ├─ UTaskPanel.h/cpp # 任务界面（任务列表）
+│  │       ├─ USettingPanel.h/cpp # 设置界面
+│  │       └─ UOverlayPanel.h/cpp # 浮层UI（提示/覆盖层）
+│  │
+│  └─ Setting/ # 配置系统
+│      ├─ USetting.h/cpp # 配置数据管理（读取/保存配置）
+│      └─ USettingWindowComponent.h/cpp # 设置窗口行为组件
+│
+└─ Main/
+    └─ AppEntry.cpp # 程序入口（初始化系统、启动主循环）
+
+# 数据流
+主循环更新顺序（Tick Pipeline）
+InputDispatcher 捕获输入（鼠标 / 键盘事件）
+↓
+InputRouter 进行命中判断与输入分发（UI / Pet）
+↓
+EventBus 分发输入事件到已注册 Actor
+↓
+Actor 执行 OnEvent，并由状态机判断是否响应
+↓
+Scheduler 执行定时任务（延迟 / 周期事件触发）
+↓
+Actor 执行 Update（状态机驱动 Component 行为）
+↓
+Component 执行具体逻辑（移动 / 对话 / UI更新等）
+↓
+Renderer 根据最终状态进行绘制输出
+
+输入流转路径（Input → Actor）
+InputDispatcher 捕获鼠标/键盘等原始输入
+↓
+InputRouter 进行目标命中判断（UI 或 Pet）
+↓
+将输入转换为语义事件（如 Click / Drag / Input）
+↓
+通过 EventBus 发送至对应 Actor
+↓
+Actor 接收输入事件并进入 OnEvent 处理流程
+
+事件流转路径（EventBus → Actor → Component）
+事件由 EventBus 统一接收与分发
+↓
+已注册 Actor 接收对应事件
+↓
+Actor 状态机判断当前状态是否允许响应
+↓
+若允许执行，则由 Actor 转发至对应 Component
+↓
+Component 执行具体行为逻辑（不参与决策）
+
+渲染流转路径（State → Renderer）
+Actor 状态机维护当前行为状态（Idle / Moving / Talking 等）
+↓
+Component 根据状态更新位置、文本、动画等数据
+↓
+Renderer 读取最新状态数据
+↓
+将最终结果绘制到屏幕
+输入流负责事件生成，事件流负责行为决策与执行，渲染流负责最终视觉输出
+
+# 功能拆解
+1. 桌宠绘制与显示（渲染驱动）
+模块：Systems / Pet + Systems / UI + Engine / Render
+功能描述：负责桌宠与 UI 的持续绘制，是系统的最终输出阶段
+触发条件：
+Scheduler Tick（每帧 / 固定间隔）
+Window 刷新请求
+事件：
+无业务事件（属于主动更新）
+执行流程：
+Scheduler Tick
+↓
+APetActor::Update()
+↓
+AUIActor::Update()
+↓
+Renderer::Draw()
+状态机响应：
+Idle → 渲染静止状态
+Moving → 渲染移动状态
+Talking → 渲染对话状态
+组件行为：
+UPetRenderComponent：绘制桌宠
+UChatPanel：绘制对话 UI
+其他 Panel：绘制界面
+
+2. 拖动桌宠（输入驱动）
+模块：Engine / Input + Systems / Pet
+功能描述：处理鼠标拖动桌宠行为
+触发条件：
+鼠标按下且命中桌宠
+鼠标移动
+鼠标释放
+事件：
+Pet_DragStart
+Pet_DragMove
+Pet_DragEnd
+执行流程：
+InputDispatcher
+↓
+InputRouter（命中检测）
+↓
+EventBus.Emit(Pet_DragStart / Move / End)
+↓
+APetActor::OnEvent()
+状态机响应：
+Idle → Dragging（Start）
+Dragging → Dragging（Move）
+Dragging → Idle（End）
+组件行为：
+UDragComponent： 
+Start：记录初始偏移
+Move：更新位置
+End：释放拖动状态
+
+3. 桌宠点击互动（行为触发）
+模块：Engine / Input + Systems / Pet
+功能描述：点击桌宠触发互动行为
+触发条件：
+鼠标点击命中桌宠（未进入拖动）
+事件：
+Pet_Clicked
+执行流程：
+InputDispatcher
+↓
+InputRouter（命中桌宠）
+↓
+EventBus.Emit(Pet_Clicked)
+↓
+APetActor::OnEvent()
+状态机响应：
+Idle → Talking（允许触发）
+Dragging → 忽略
+Talking → 忽略或排队
+组件行为：
+UChatComponent：生成对话文本
+UAudioComponent：播放音效
+UInputComponent：记录输入（可选）
+
+4. 桌宠说话 / 日记（行为执行）
+模块：Systems / Pet
+功能描述：根据事件或定时触发桌宠行为
+触发条件：
+Pet_Clicked
+Scheduler 定时触发
+事件：
+Pet_Talk
+Pet_WriteDiary
+执行流程：
+EventBus.Emit(Pet_Talk)
+↓
+APetActor::OnEvent()
+↓
+StateMachine 判断
+↓
+Component 执行
+状态机响应：
+Idle → Talking → Idle
+组件行为：
+UChatComponent：显示文本
+UAudioComponent：播放语音
+UDiaryComponent：写入日志
+
+5. 关闭程序（UI驱动）
+模块：Systems / UI + Engine
+功能描述：通过 UI 操作关闭指定程序
+触发条件：
+点击 UI 按钮
+事件：
+CloseProgramClicked
+执行流程：
+InputDispatcher
+↓
+InputRouter（命中 UI）
+↓
+AUIActor 处理
+↓
+EventBus.Emit(CloseProgramClicked)
+状态机响应：
+UIActor 判断是否允许执行
+PetActor 可选择拦截（扩展点）
+组件行为：
+UCloseComponent：调用系统接口关闭目标程序
+
+拆解原则
+1.每个功能必须包含：触发条件、事件、执行流程、状态机响应、组件行为
+2.所有事件统一通过 EventBus 分发
+3.所有逻辑必须经过 Actor 状态机判断
+4.Component 只负责执行，不负责决策
+5.输入 → Actor → 状态机 → Component → 渲染，形成完整闭环
+
+# 关键机制
+1.EventBus事件订阅系统
+程序运行时注册各个Actor
+各Actor下挂载的Component组件初始化时订阅事件
+捕获输入时触发已订阅的事件后再传到Actor
+由Actor的状态机判断是否执行
+
+2.Scheduler调度系统
+定时驱动 Actor 或系统更新
+支持周期性行为或延迟触发
+
+3.StateManager全局状态管理
+提供全局状态查询和共享
+
+4.Actor封装对象
+每个Actor都有自己的状态机和挂载的Component组件
+UIActor还挂载着各个UI界面Panels
+
+
+# 开发规则
+1.命名规范（以学习为目的，照搬虚幻引擎的命名规范）
+类名：使用 PascalCase（首字母大写，每个单词首字母大写）
+前缀表示类型：
+A → Actor，如 APetActor
+U → Component，如 UAudioComponent
+I → Interface，如 IInteractable
+F → Struct 或 Delegate，如 FPetStats、FOnPetClicked
+E → Enum，如 EPetState
+成员变量：使用前缀表示类型或作用域，后接 PascalCase 名称：
+b → bool，如 bIsTalking
+i → int32，如 iHealth
+f → float，如 fMoveSpeed
+m → 成员变量，如 mCurrentState
+函数 / 方法：使用 PascalCase，动词开头，清楚描述动作：
+示例：PlayAudio(), MoveToTarget(), CanTalk()
+文件名：与类名一致，每个类放在单独文件。
+示例：APetActor.h/APetActor.cpp
+
+2.代码风格与文件规则
+每个类一个文件，文件名与类名一致。
+函数名使用 PascalCase，清晰描述动作。
+成员变量加前缀表示类型/作用域，保证可读性。
+注释清楚描述每个模块、类、函数和复杂逻辑。
+
+3.模块依赖规则
+Core：基础工具，不能依赖其他模块。
+Runtime：调度与事件管理，依赖 Core。
+Engine：封装操作系统接口，依赖 Core。
+Systems：业务逻辑，依赖 Core / Runtime / Engine，不被其他模块依赖。
+
+4.事件与状态机规则
+程序初始化时，各 Actor 向 EventBus 注册自己所关心的事件
+程序运行时，当事件被触发后，统一进入 EventBus
+EventBus 根据注册关系将事件分发给对应的 Actor
+Actor 接收事件后，交由自身状态机判断是否执行
+
+5.组件职责规则
+每个组件只实现自身功能，不处理 Actor 以外的逻辑。
+组件响应事件时必须通过 Actor 的状态机判断。
+组件可以动态订阅或取消事件，但需保证在 Actor 已注册 EventBus 后执行。
