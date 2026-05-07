@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>洛克语翻译器</title>
+<style>
+body{background:#0a2e1c;padding:16px;font-family:system-ui}
+.box{max-width:550px;margin:0 auto;background:#fff8ed;border-radius:30px;padding:20px}
+h2{text-align:center;color:#2d5a3b;margin:0}
+.sub{text-align:center;font-size:12px;color:#8b6b3d;margin-bottom:18px}
+.mode-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center}
+.mode-btn{background:#e8dcc8;border:none;border-radius:40px;padding:10px 16px;font-size:14px;font-weight:bold;color:#5a3a1a}
+.mode-btn.active{background:#2d5a3b;color:white}
+textarea{width:100%;padding:12px;font-size:16px;border-radius:20px;border:1px solid #d4a55a;background:white;box-sizing:border-box;font-family:monospace}
+.result-area{background:#f0ead8;margin-top:18px;padding:12px;border-radius:20px;font-size:18px;font-family:monospace;word-break:break-all}
+.btn-group{display:flex;gap:12px;margin-top:15px}
+button{background:#2d5a3b;border:none;border-radius:30px;padding:10px;color:white;font-size:14px;flex:1}
+.btn-swap{background:#d4a55a;color:#2d5a3b;font-weight:bold}
+.footer{text-align:center;margin-top:20px;font-size:11px;color:#8b6b3d}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>洛克语翻译器</h2>
+<div class="sub">英文 -> 洛克语 -> 中文</div>
+<div class="mode-row">
+<button class="mode-btn active" data-mode="en">英文->洛克语</button>
+<button class="mode-btn" data-mode="zh">洛克语->中文</button>
+<button class="mode-btn" data-mode="back">中文->英文</button>
+</div>
+<textarea id="inputText" rows="3" placeholder="输入内容..."></textarea>
+<div class="result-area" id="outputText"></div>
+<div class="btn-group">
+<button id="copyBtn">复制</button>
+<button id="swapBtn" class="btn-swap">交换</button>
+<button id="clearBtn">清空</button>
+</div>
+<div class="footer">星盘翻译组</div>
+</div>
+<script>
+var map={'a':'ᚫ','b':'ᛒ','c':'ᚲ','d':'ᛞ','e':'ᛖ','f':'ᚠ','g':'ᚷ','h':'ᚺ','i':'ᛁ','j':'ᛃ','k':'ᚴ','l':'ᛚ','m':'ᛗ','n':'ᚾ','o':'ᛟ','p':'ᛈ','q':'ᛝ','r':'ᚱ','s':'ᛋ','t':'ᛏ','u':'ᚢ','v':'ᛩ','w':'ᚹ','x':'ᛜ','y':'и','z':'ᛉ'};
+var rev={};for(var k in map)rev[map[k]]=k;
+function en2r(s){var r='';for(var i=0;i<s.length;i++){var c=s[i].toLowerCase();r+=map[c]||s[i];}return r;}
+function r2en(s){var r='';for(var i=0;i<s.length;i++){r+=rev[s[i]]||s[i];}return r;}
+function transAPI(t,f,t2,cb){if(!t.trim()){cb('');return;}fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(t)+'&langpair='+f+'|'+t2).then(r=>r.json()).then(d=>{var x=d?.responseData?.translatedText||t;x=x.replace(/\[.*?\]$/,'').trim();cb(x);}).catch(()=>cb(t));}
+var mode='en',busy=false;
+var inp=document.getElementById('inputText'),out=document.getElementById('outputText');
+function translate(){if(busy)return;var v=inp.value;if(!v.trim()){out.innerText='';return;}
+if(mode==='en'){out.innerText=en2r(v);return;}
+busy=true;out.innerText='翻译中...';
+function done(r){out.innerText=r;busy=false;}
+if(mode==='zh')transAPI(r2en(v),'en','zh',done);
+else if(mode==='back')transAPI(v,'zh','en',done);
+else busy=false;}
+function clearAll(){inp.value='';out.innerText='';}
+function swap(){var ot=out.innerText;if(!ot||ot.includes('翻译中')||ot.includes('请先')){out.innerText='请先完成一次翻译';setTimeout(function(){if(out.innerText==='请先完成一次翻译')translate();},1500);return;}
+inp.value=ot;if(mode==='en')mode='zh';else if(mode==='zh')mode='en';else if(mode==='back')mode='en';
+var btns=document.querySelectorAll('.mode-btn');for(var i=0;i<btns.length;i++){var b=btns[i];if(b.getAttribute('data-mode')===mode)b.className='mode-btn active';else b.className='mode-btn';}
+translate();}
+function copyResult(){var t=out.innerText;if(!t||t.includes('翻译中'))return;var fake=document.createElement('textarea');fake.value=t;document.body.appendChild(fake);fake.select();document.execCommand('copy');document.body.removeChild(fake);var btn=document.getElementById('copyBtn');var old=btn.innerText;btn.innerText='已复制';setTimeout(function(){btn.innerText=old;},1200);}
+function setMode(m){if(m===mode)return;mode=m;var btns=document.querySelectorAll('.mode-btn');for(var i=0;i<btns.length;i++){var b=btns[i];if(b.getAttribute('data-mode')===m)b.className='mode-btn active';else b.className='mode-btn';}
+translate();}
+document.getElementById('clearBtn').onclick=clearAll;
+document.getElementById('swapBtn').onclick=swap;
+document.getElementById('copyBtn').onclick=copyResult;
+var modeBtns=document.querySelectorAll('.mode-btn');for(var i=0;i<modeBtns.length;i++){modeBtns[i].onclick=(function(btn){return function(){setMode(btn.getAttribute('data-mode'));};})(modeBtns[i]);}
+inp.oninput=function(){if(window._d)clearTimeout(window._d);window._d=setTimeout(translate,300);};
+translate();
+</script>
+</body>
+</html>

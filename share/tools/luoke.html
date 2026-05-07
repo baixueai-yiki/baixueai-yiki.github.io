@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洛克语翻译器 | 三向互译 | 星盘翻译组</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #0a2e1c 0%, #1a4a2a 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255,248,225,0.98);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 2px solid #d4a55a;
+        }
+        h1 { text-align: center; color: #2d5a3b; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #8b6b3d; margin-bottom: 20px; }
+        
+        .mode-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .mode-btn {
+            padding: 10px 20px;
+            font-size: 0.95em;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            background: #e8dcc8;
+            color: #5a3a1a;
+        }
+        .mode-btn.active {
+            background: #2d5a3b;
+            color: #fff8e1;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .mode-btn:not(.active):hover { background: #d4c4a8; }
+        
+        .translator-panel {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .panel {
+            flex: 1;
+            min-width: 260px;
+            background: #fffef7;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .panel h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #2d5a3b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 14px;
+            font-size: 1.1em;
+            border: 2px solid #d4a55a;
+            border-radius: 20px;
+            resize: vertical;
+            background: #ffffff;
+            font-family: 'Segoe UI', monospace;
+        }
+        textarea:focus { outline: none; border-color: #2d5a3b; }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #2d5a3b;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        button:hover { background: #1e3d28; transform: scale(1.02); }
+        .copy-btn { background: #8b6b3d; }
+        .swap-all-btn { background: #d4a55a; color: #2d5a3b; font-weight: bold; }
+        .clear-btn { background: #aaa; }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #8b6b3d;
+            border-top: 1px solid #e8dcc8;
+            padding-top: 15px;
+            font-size: 0.85em;
+        }
+        .credit { font-weight: bold; color: #2d5a3b; margin-top: 8px; }
+        .char-count { text-align: right; font-size: 0.75em; color: #aaa; margin-top: 5px; }
+        
+        @media (max-width: 700px) {
+            .translator-panel { flex-direction: column; }
+            .panel { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🌿 洛克语三向翻译器 🌿</h1>
+    <div class="subtitle">中文 ⇄ 英文 ⇄ 洛克语 | 星盘翻译组 出品</div>
+
+    <div style="background:#e8f0e0; padding:10px; border-radius:20px; margin-bottom:20px; text-align:center; font-size:0.85rem;">
+        ✅ 使用 MyMemory 免费翻译API • 支持中文↔英文自动翻译 • 洛克语直接转换
+    </div>
+
+    <div class="mode-selector">
+        <button class="mode-btn" data-mode="cn-en">🇨🇳 中文 → 英文</button>
+        <button class="mode-btn" data-mode="en-cn">🇬🇧 英文 → 中文</button>
+        <button class="mode-btn" data-mode="cn-runes">🇨🇳 中文 → 洛克语</button>
+        <button class="mode-btn active" data-mode="en-runes">🇬🇧 英文 → 洛克语</button>
+        <button class="mode-btn" data-mode="runes-cn">🔮 洛克语 → 中文</button>
+        <button class="mode-btn" data-mode="runes-en">🔮 洛克语 → 英文</button>
+    </div>
+
+    <div class="translator-panel">
+        <div class="panel">
+            <h3>📝 输入</h3>
+            <textarea id="inputText" placeholder="输入要翻译的内容..."></textarea>
+            <div class="char-count" id="inputCount">0 字符</div>
+            <div class="action-buttons">
+                <button id="clearBtn" class="clear-btn">🗑️ 清空输入</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>✨ 翻译结果</h3>
+            <textarea id="outputText" readonly placeholder="翻译结果将显示在这里..."></textarea>
+            <div class="char-count" id="outputCount">0 字符</div>
+            <div class="action-buttons">
+                <button id="copyBtn" class="copy-btn">📋 复制结果</button>
+                <button id="swapBtn" class="swap-all-btn">🔄 交换并反转方向</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        💡 点击「交换并反转方向」→ 输出内容变为输入，翻译方向自动反转<br>
+        ✨ 星盘翻译组 荣誉出品 ✨
+    </div>
+</div>
+
+<script>
+    // ==================== 洛克语映射表 ====================
+    const letterToRune = {
+     'a':'ᚫ','b':'ᛒ','c':'ᚲ','d':'ᛞ','e':'ᛖ',
+        'f':'ᚠ','g':'ᚷ','h':'ᚺ','i':'ᛁ','j':'ᛃ',
+        'k':'ᚴ','l':'ᛚ','m':'ᛗ','n':'ᚾ','o':'ᛟ',
+        'p':'ᛈ','q':'ᛝ','r':'ᚱ','s':'ᛋ','t':'ᛏ',
+        'u':'ᚢ','v':'ᛩ','w':'ᚹ','x':'ᛜ','y':'и','z':'ᛉ'
+    };
+
+    const runeToLetter = {};
+    for (const [letter, rune] of Object.entries(letterToRune)) {
+        runeToLetter[rune] = letter;
+    }
+
+    function englishToRunes(text) {
+        let result = '';
+        for (let ch of text) {
+            const lower = ch.toLowerCase();
+            if (letterToRune[lower]) result += letterToRune[lower];
+            else result += ch;
+        }
+        return result;
+    }
+
+    function runesToEnglish(text) {
+        let result = '';
+        for (let ch of text) {
+            if (runeToLetter[ch]) result += runeToLetter[ch];
+            else result += ch;
+        }
+        return result;
+    }
+
+    // ========== MyMemory 翻译API ==========
+    async function translateWithMyMemory(text, sourceLang, targetLang) {
+        if (!text.trim()) return '';
+        const pair = `${sourceLang}|${targetLang}`;
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`;
+        
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data && data.responseData && data.responseData.translatedText) {
+            let translated = data.responseData.translatedText;
+            translated = translated.replace(/\[.*?\]$/, '').trim();
+            return translated;
+        }
+        return text;
+    }
+
+    async function chineseToEnglish(text) {
+        return await translateWithMyMemory(text, 'zh', 'en');
+    }
+    async function englishToChinese(text) {
+        return await translateWithMyMemory(text, 'en', 'zh');
+    }
+
+    // ========== 复合转换 ==========
+    async function chineseToRunes(text) {
+        const english = await chineseToEnglish(text);
+        return englishToRunes(english);
+    }
+    async function runesToChinese(text) {
+        const english = runesToEnglish(text);
+        return await englishToChinese(english);
+    }
+
+    // ========== 获取反向模式 ==========
+    function getReverseMode(mode) {
+        const reverseMap = {
+            'cn-en': 'en-cn',
+            'en-cn': 'cn-en',
+            'cn-runes': 'runes-cn',
+            'en-runes': 'runes-en',
+            'runes-cn': 'cn-runes',
+            'runes-en': 'en-runes'
+        };
+        return reverseMap[mode] || mode;
+    }
+
+    // ========== UI 逻辑 ==========
+    let currentMode = "en-runes";
+    let isTranslating = false;
+
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
+    const inputCount = document.getElementById('inputCount');
+    const outputCount = document.getElementById('outputCount');
+
+    function updatePlaceholder() {
+        const placeholders = {
+            'cn-en': '例如：你好，洛克王国！',
+            'en-cn': '例如：Hello, Rock Kingdom!',
+            'cn-runes': '例如：你好，朋友！',
+            'en-runes': '例如：Hello little rock!',
+            'runes-cn': '例如：ᚺᛖᛚᛚᛟ ᚠᚱᛁᛖᚾᛞ',
+            'runes-en': '例如：ᚺᛖᛚᛚᛟ ᚹᛟᚱᛚᛞ'
+        };
+        inputText.placeholder = placeholders[currentMode] || '请输入内容';
+    }
+
+    async function translate() {
+        if (isTranslating) return;
+        const input = inputText.value;
+        if (!input.trim()) {
+            outputText.value = '';
+            updateCharCount();
+            return;
+        }
+
+        try {
+            isTranslating = true;
+            outputText.value = '🔄 翻译中...';
+            let result = '';
+
+            switch (currentMode) {
+                case 'cn-en':
+                    result = await chineseToEnglish(input);
+                    break;
+                case 'en-cn':
+                    result = await englishToChinese(input);
+                    break;
+                case 'cn-runes':
+                    result = await chineseToRunes(input);
+                    break;
+                case 'en-runes':
+                    result = englishToRunes(input);
+                    break;
+                case 'runes-cn':
+                    result = await runesToChinese(input);
+                    break;
+                case 'runes-en':
+                    result = runesToEnglish(input);
+                    break;
+                default:
+                    result = '请选择有效模式';
+            }
+            outputText.value = result;
+        } catch (err) {
+            console.error(err);
+            outputText.value = `❌ 翻译失败：${err.message || '网络错误'}`;
+        } finally {
+            isTranslating = false;
+            updateCharCount();
+        }
+    }
+
+    function updateCharCount() {
+        inputCount.textContent = inputText.value.length + ' 字符';
+        outputCount.textContent = outputText.value.length + ' 字符';
+    }
+
+    function clearInput() {
+        inputText.value = '';
+        outputText.value = '';
+        updateCharCount();
+    }
+
+    // 核心修复：交换并反转方向
+    async function swapAndReverse() {
+        const currentOutput = outputText.value;
+        
+        // 检查输出是否有效
+        const isValid = currentOutput && 
+                       !currentOutput.startsWith('❌') && 
+                       !currentOutput.startsWith('🔄') &&
+                       currentOutput !== '请选择有效模式';
+        
+        if (!isValid) {
+            outputText.value = '⚠️ 无法交换：输出内容无效，请先完成一次有效翻译';
+            setTimeout(() => {
+                if (outputText.value === '⚠️ 无法交换：输出内容无效，请先完成一次有效翻译') {
+                    translate();
+                }
+            }, 2000);
+            return;
+        }
+        
+        // 1. 获取反向模式
+        const reverseMode = getReverseMode(currentMode);
+        
+        // 2. 把输出内容放到输入框
+        inputText.value = currentOutput;
+        
+        // 3. 切换到反向模式
+        currentMode = reverseMode;
+        
+        // 4. 更新UI按钮高亮
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            if (btn.dataset.mode === currentMode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        // 5. 更新占位符
+        updatePlaceholder();
+        
+        // 6. 重新翻译
+        await translate();
+    }
+
+    function copyResult() {
+        outputText.select();
+        document.execCommand('copy');
+        const btn = document.getElementById('copyBtn');
+        const old = btn.textContent;
+        btn.textContent = '✅ 已复制！';
+        setTimeout(() => btn.textContent = old, 1500);
+    }
+
+    function setMode(mode) {
+        if (mode === currentMode) return;
+        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            if (btn.dataset.mode === mode) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        updatePlaceholder();
+        translate();
+    }
+
+    // 事件绑定
+    document.getElementById('clearBtn').addEventListener('click', clearInput);
+    document.getElementById('swapBtn').addEventListener('click', swapAndReverse);
+    document.getElementById('copyBtn').addEventListener('click', copyResult);
+
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = e.currentTarget.dataset.mode;
+            setMode(mode);
+        });
+    });
+
+    inputText.addEventListener('input', () => {
+        updateCharCount();
+        clearTimeout(window.debounce);
+        window.debounce = setTimeout(() => translate(), 300);
+    });
+
+    // 初始化
+    setMode('en-runes');
+</script>
+</body>
+</html>
