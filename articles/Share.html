@@ -39,117 +39,166 @@
 2.需要点击“创建项目”或打开文件夹，写代码应当避免单文件编写
 3.需要在项目开始前就做好规划，可以先写个文档用来指导整个项目的未来发展：
 <a href="https://github.com/baixueai-yiki/baixueai-yiki.github.io/blob/main/share/指导文档（AI）.txt?raw=true" target="_blank">（这里还有一篇AI写的文档，写的更好，需要逐步学习）</a>
-# 项目目标
-1.设计一个桌宠系统，包含基本的点击交互、定时行为等功能，不包含网络功能与复杂ai系统
-窗口为铺满用户显示器的形式，为后续补充做准备，需要加入各种越权影响用户体验的meta要素
-2.包含四个层级的模块：Core（基础库）、Systems（系统层）、Runtime（协议层）、Engine（引擎层）、Domain（业务层）
+# 1.项目规划
+首先创建项目文件夹，命名为 Pet
+接下来创建子文件夹分别用于存放不同文件
+Pet/ # 项目文件夹
+├─ .vscode/     # 项目配置目录
+├─ Build/       # 编译中间文件
+├─ Distribution/# 面向用户的最终可执行文件
+├─ Docs/        # 项目指导文档
+└─ Source/      # 源码
+## 1.1.为vscord配置环境
+并添加编译代码的脚本，通过vscord启动编译脚本
+├─ .vscode/     # 项目配置目录
+│  ├─ c_cpp_properties.json # 为vscord解释代码
+│  ├─ build.ps1             # 项目编译脚本
+│  └─ tasks.json            # 通过vscord进行编译的途径
+## 1.2.配置编译脚本
+使编译脚本自动检索Source/并进行编译
+将obj编译中间文件生成到Build/文件夹
+将exe可执行文件生成到Distribution/文件夹
+├─ Build/       # 编译中间文件
+│  └─ obj
+## 1.3.规划发行的文件结构
+创建不同种类资源所用的文件夹，方便整理资源
+├─ Distribution/# 面向用户的最终可执行文件
+│  ├─ alpha/     # 内测版本
+│  │  └─ Miss_qing/ # 以角色名命名素材文件夹，以便用户快捷更换自定义桌宠
+│  │     ├─ assets/ # 资源
+│  │     │  ├─ audio/  # 音频
+│  │     │  ├─ chat/   # 文本
+│  │     │  └─ images/ # 图像
+│  │     ├─ config/ # 配置文件
+│  │     ├─ diary.txt  # 桌宠每次结束运行时会写的日记
+│  │     └─ Pet.exe    # 可执行exe文件
+│  └─ beta/      # 公测版本
+## 1.4.添加各方面的指导文档
+├─ Docs/        # 项目指导文档
+│  ├─ Architecture分层与依赖规则.md
+│  ├─ Changelog版本变更记录.md
+│  ├─ CodingStyle命名与代码风格.md
+│  ├─ DevelopmentGuide开发流程手册.md
+│  ├─ ProjectGuide项目总指导.md
+│  └─ Roadmap开发计划和里程碑.md
+## 1.5.最终效果
+最终的项目目录大概是这样的结构
+先创建文件夹与空文件，后期再里面添加内容
+Pet/ # 项目文件夹
+├─ .vscode/     # 项目配置目录build.ps1
+│  ├─ c_cpp_properties.json
+│  └─ tasks.json
+├─ Build/       # 编译中间文件
+│  └─ obj
+├─ Docs/        # 项目指导文档
+│  ├─ Architecture分层与依赖规则.md
+│  ├─ Changelog版本变更记录.md
+│  ├─ CodingStyle命名与代码风格.md
+│  ├─ DevelopmentGuide开发流程手册.md
+│  ├─ ProjectGuide项目总指导.md
+│  └─ Roadmap开发计划和里程碑.md
+├─ Distribution/# 面向用户的最终可执行文件
+│  ├─ alpha/     # 内测版本
+│  │  └─ Miss_qing/ # 以角色名命名素材文件夹，以便用户快捷更换自定义桌宠
+│  │     ├─ assets/ # 资源
+│  │     │  ├─ audio/  # 音频
+│  │     │  ├─ chat/   # 文本
+│  │     │  └─ images/ # 图像
+│  │     ├─ config/ # 配置文件
+│  │     ├─ diary.txt  # 桌宠每次结束运行时会写的日记
+│  │     └─ Pet.exe    # 可执行exe文件
+│  └─ beta/      # 公测版本
+└─ Source/      # 源码
+
+# 2.模块划分
+Source/
+├─ Core/    #（基础库）存放整个系统都会用到的小工具，方便各层级调用
+├─ Domain/  #（流程库）预设了各种流程，形成用户可直接用的功能
+├─ Engine/  #（引擎层）提供底层接口，Systems 调用它来实现功能
+├─ Runtime/ #（协议层）用于分发事件，是系统的通信中枢
+├─ Systems/ #（系统层）存放着actor和其挂载的Component、Panel，用于实现业务逻辑
+└─ main.cpp # 程序入口（初始化系统、启动主循环）
+## 2.1.Core基础库
+不依赖任何模块，并且被任何模块所依赖
+存放一些很基础的功能
+先创建几个空文件，方便目录的区分
+├─ Core/ # 基础库
+│  ├─ Path.h/cpp       # 计算和处理文件路径
+│  ├── FileSystem.h/cpp  # 在磁盘中读写文件（依赖于Path）
+│  ├─── TextFile.h/cpp     # 支持热更新的读写文本功能（依赖于FileSystem）
+│  ├─── Logger.h/cpp         # 输出日志文件（依赖于FileSystem）
+│  ├─── Config.h/cpp       # 配置管理器（依赖于FileSystem）
+│  └─ Timer.h/cpp      # 程序统一的时间工具
+## 2.2.Domain流程库
+不被任何模块所依赖，而且依赖任何模块
+预设了各种流程，形成用户可直接用的功能
+这里预定了一个桌宠内置的小游戏，有完全独属于自己的运行逻辑，会调用其他功能
+├─ Domain/ # 流程库（预设的工作流，可直接调用）
+│  ├─ Game/ # 病娇小游戏
+│  │  ├─ GameActor.h/cpp # 游戏本体
+│  │  ├─ GameComponent/
+│  │  │  ├─ GameAudioComponent.h/cpp # 游戏音频
+│  │  │  ├─ GameChatComponent.h/cpp  # 游戏文本
+│  │  └─ GameMap/
+│  │     ├─ Map1.h/cpp #关卡1
+│  │     ├─ Map2.h/cpp #关卡2
+│  │     ├─ Map3.h/cpp #关卡3
+## 2.3.Engine引擎层
+依赖Core，被Systems依赖
+封装操作系统接口
+├─ Engine/    # 引擎层：提供底层接口，Systems 调用它来实现功能
+│   ├─ Window/  # 窗口与渲染上下文管理
+│   │   ├─ Window.h/cpp             # 窗口创建/销毁/主循环管理
+│   │   └─ WindowEventDispatcher.h/cpp # 窗口事件（大小变化/关闭/焦点等）转发
+│   ├─ Input/   # 输入处理
+│   │   ├─ InputDispatcher.h/cpp    # 捕获鼠标/键盘/触屏事件
+│   │   ├─ Keyboard.h/cpp           # 键盘状态查询接口
+│   │   ├─ Mouse.h/cpp              # 鼠标状态/位置/点击接口
+│   │   └─ TextInputHandler.h/cpp   # 文本输入解析（字符/IME 支持）
+│   ├─ Render/  # 绘制与渲染封装
+│   │   ├─ Renderer.h/cpp           # 图片/UI绘制接口（位图、贴图、动画）
+│   │   ├─ Texture.h/cpp            # 贴图加载、管理、缓存
+│   │   └─ Animation.h/cpp          # 基础动画接口（帧动画、插值动画）
+│   └─ Audio/   # 音频封装
+│       ├─ AudioPlayer.h/cpp        # 播放音效/背景音乐
+│       └─ AudioResource.h/cpp      # 音频资源加载/缓存
+## 2.4.Runtime协议层
+依赖Core，被Systems依赖
+负责调度与事件管理
 程序初始化时，Systems层会在Runtime层注册自己感兴趣的事件
 当事件触发时，Runtime层会通知Systems层调用Engine层的接口来完成具体的功能实现
-而Domain层则预设了各种流程，形成用户可直接用的功能。
-3.
-
-
-# 目录结构
-Source/
-├─ Core/ # 基础库（工具函数、数据结构等）
-│  ├─ TextFile.h/cpp # 文本读取/写入、简单热更新支持
-│  ├─ Path.h/cpp # 路径处理（拼接、解析、获取程序目录等）
-│  ├─ Timer.h/cpp # 基础计时工具（时间间隔、时间戳）
-│  ├─ JsonHelper.h/cpp # JSON解析与序列化工具
-│  ├─ Logger.h/cpp # 日志系统（输出到控制台/文件）
-│
 ├─ Runtime/ # 协议层/中枢（无具体业务）
-│  ├─ Event/
-│  │   └─ EventBus.h/cpp # 事件发布/订阅中心（模块通信核心）
-│  ├─ Schedule/
-│  │   └─ Scheduler.h/cpp # 定时任务调度（延迟/循环任务）
-│  └─ State/
-│      └─ StateManager.h/cpp # 全局状态管理（全局开关/配置）
-│
-├─ Engine/ # 系统层（操作系统交互）
-│  ├─ Window/
-│  │   ├─ Window.h/cpp # 窗口创建、销毁、主循环管理
-│  │   └─ InputRouter.h/cpp # 输入路由（分发到UI或Pet）
-│  ├─ Render/
-│  │   └─ Renderer.h/cpp # 渲染接口封装（绘制图片/UI）
-│  └─ Input/
-│      ├─ InputDispatcher.h/cpp # 输入捕获（鼠标/键盘事件）
-│      └─ InputChat.h/cpp # 文本输入处理（键盘输入解析）
-│
-├─ Systems/ # 业务层（核心逻辑）
+│  ├─ EventBus.h/cpp # 事件发布/订阅中心（模块通信核心）
+│  ├─ Scheduler.h/cpp # 定时任务调度（延迟/循环任务）
+│  └─ StateManager.h/cpp # 全局状态管理（全局开关/配置）
+## 2.5.Systems系统层
+依赖Core / Runtime / Engine，不被任何模块依赖
+实现具体业务逻辑（桌宠、UI、设置等）
+├─ Systems/ # 系统层（核心逻辑）
 │  ├─ Pet/ # 桌宠系统
-│  │   ├─ APetActor.h/cpp # 桌宠核心对象（状态机+组件管理）
+│  │   ├─ PetActor.h/cpp # 桌宠核心对象（状态机+组件管理）
 │  │   ├─ Components/ # 桌宠功能组件
-│  │   │   ├─ UChatComponent.h/cpp # 控制桌宠对话内容显示
-│  │   │   ├─ UAudioComponent.h/cpp # 控制音效播放
-│  │   │   ├─ UDiaryComponent.h/cpp # 写入桌宠日志/日记
-│  │   │   └─ UInputComponent.h/cpp # 处理用户输入内容
+│  │   │   ├─ AudioComponent.h/cpp # 控制音效播放
+│  │   │   ├─ ChatComponent.h/cpp  # 控制桌宠对话内容显示
+│  │   │   ├─ DiaryComponent.h/cpp # 写入桌宠日志/日记
+│  │   │   └─ InputComponent.h/cpp # 处理用户输入内容
 │  │   └─ Render/
-│  │       └─ UPetRenderComponent.h/cpp # 桌宠绘制（位置/贴图/动画）
-│  │
-│  ├─ UI/ # UI系统
-│  │   ├─ AUIActor.h/cpp # UI核心对象（管理所有UI界面）
-│  │   ├─ Components/ # UI行为组件（交互逻辑）
-│  │   │   ├─ UCloseComponent.h/cpp # 关闭按钮行为（关闭程序）
-│  │   │   ├─ UScrollComponent.h/cpp # 滚动处理（列表/界面滚动）
-│  │   │   ├─ UDragComponent.h/cpp # 拖动窗口/界面
-│  │   │   └─ UInputComponent.h/cpp # UI输入框处理
-│  │   └─ Panels/ # UI界面（结构与渲染）
-│  │       ├─ UChatPanel.h/cpp # 聊天界面（显示对话）
-│  │       ├─ UTaskPanel.h/cpp # 任务界面（任务列表）
-│  │       ├─ USettingPanel.h/cpp # 设置界面
-│  │       └─ UOverlayPanel.h/cpp # 浮层UI（提示/覆盖层）
-│  │
-│  └─ Setting/ # 配置系统
-│      ├─ USetting.h/cpp # 配置数据管理（读取/保存配置）
-│      └─ USettingWindowComponent.h/cpp # 设置窗口行为组件
-│
-└─ Main/
-    └─ AppEntry.cpp # 程序入口（初始化系统、启动主循环）
-
-# 开发规范
-1.命名规范（以学习为目的，照搬虚幻引擎的命名规范）
-类名：使用 PascalCase（首字母大写，每个单词首字母大写）
-前缀表示类型：
-A → Actor，如 APetActor
-U → Component，如 UAudioComponent
-I → Interface，如 IInteractable
-F → Struct 或 Delegate，如 FPetStats、FOnPetClicked
-E → Enum，如 EPetState
-成员变量：使用前缀表示类型或作用域，后接 PascalCase 名称：
-b → bool，如 bIsTalking
-i → int32，如 iHealth
-f → float，如 fMoveSpeed
-m → 成员变量，如 mCurrentState
-函数 / 方法：使用 PascalCase，动词开头，清楚描述动作：
-示例：PlayAudio(), MoveToTarget(), CanTalk()
-文件名：与类名一致，每个类放在单独文件。
-示例：APetActor.h/APetActor.cpp
-
-2.代码风格与文件规则
-每个类一个文件，文件名与类名一致。
-函数名使用 PascalCase，清晰描述动作。
-成员变量加前缀表示类型/作用域，保证可读性。
-注释清楚描述每个模块、类、函数和复杂逻辑。
-
-3.模块依赖规则
-Core：基础工具，不能依赖其他模块。
-Runtime：调度与事件管理，依赖 Core。
-Engine：封装操作系统接口，依赖 Core。
-Systems：业务逻辑，依赖 Core / Runtime / Engine，不被其他模块依赖。
-
-4.事件与状态机规则
-程序初始化时，各 Actor 向 EventBus 注册自己所关心的事件
-程序运行时，当事件被触发后，统一进入 EventBus
-EventBus 根据注册关系将事件分发给对应的 Actor
-Actor 接收事件后，交由自身状态机判断是否执行
-
-5.组件职责规则
-每个组件只实现自身功能，不处理 Actor 以外的逻辑。
-组件响应事件时必须通过 Actor 的状态机判断。
-组件可以动态订阅或取消事件，但需保证在 Actor 已注册 EventBus 后执行。
-
-# 数据流
+│  │       └─ PetRenderComponent.h/cpp # 桌宠绘制（位置/贴图/动画）
+│  └─ UI/ # UI系统
+│      ├─ UIActor.h/cpp # UI核心对象（管理所有UI界面）
+│      ├─ Components/ # UI行为组件（交互逻辑）
+│      │   ├─ CloseComponent.h/cpp # 关闭按钮行为（关闭程序）
+│      │   ├─ ScrollComponent.h/cpp # 滚动处理（列表/界面滚动）
+│      │   ├─ DragComponent.h/cpp # 拖动窗口/界面
+│      │   └─ InputComponent.h/cpp # UI输入框处理
+│      └─ Panels/ # UI界面（结构与渲染）
+│          ├─ ChatPanel.h/cpp # 聊天界面（显示对话）
+│          ├─ TaskPanel.h/cpp # 任务界面（任务列表）
+│          ├─ SettingPanel.h/cpp # 设置界面
+│          └─ OverlayPanel.h/cpp # 浮层UI（提示/覆盖层）
+## 2.6.主循环程序
+└─ main.cpp # 程序入口（初始化系统、启动主循环）
+## 2.7.最终效果
 
 </div><!--class="text-block"-->
 </details><!--如何用c++写一个桌宠-->
