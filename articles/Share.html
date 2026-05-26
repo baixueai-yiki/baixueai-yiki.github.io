@@ -126,30 +126,19 @@ Source/
 │  ├─ Path.h/cpp       # 计算和处理文件路径
 │  ├── FileSystem.h/cpp  # 在磁盘中读写文件（依赖于Path）
 │  ├─── TextFile.h/cpp     # 支持热更新的读写文本功能（依赖于FileSystem）
-│  ├─── Logger.h/cpp         # 输出日志文件（依赖于FileSystem）
+│  ├─── Logger.h/cpp       # 输出日志文件（依赖于FileSystem）
 │  ├─── Config.h/cpp       # 配置管理器（依赖于FileSystem）
 │  └─ Timer.h/cpp      # 程序统一的时间工具
 ## 2.2.Domain流程库
-不被任何模块所依赖，而且依赖任何模块
-预设了各种流程，形成用户可直接用的功能
-这里预定了一个桌宠内置的小游戏，有完全独属于自己的运行逻辑，会调用其他功能
-├─ Domain/ # 流程库（预设的工作流，可直接调用）
-│  ├─ Game/ # 病娇小游戏
-│  │  ├─ GameActor.h/cpp # 游戏本体
-│  │  ├─ GameComponent/
-│  │  │  ├─ GameAudioComponent.h/cpp # 游戏音频
-│  │  │  ├─ GameChatComponent.h/cpp  # 游戏文本
-│  │  └─ GameMap/
-│  │     ├─ Map1.h/cpp #关卡1
-│  │     ├─ Map2.h/cpp #关卡2
-│  │     ├─ Map3.h/cpp #关卡3
+这个目前还空着
 ## 2.3.Engine引擎层
 依赖Core，被Systems依赖
 封装操作系统接口
 ├─ Engine/    # 引擎层：提供底层接口，Systems 调用它来实现功能
 │   ├─ Window/  # 窗口与渲染上下文管理
-│   │   ├─ Window.h/cpp             # 窗口创建/销毁/主循环管理
-│   │   └─ WindowEventDispatcher.h/cpp # 窗口事件（大小变化/关闭/焦点等）转发
+│   │   ├─ WindowEvents.h/cpp       # 事件轮询与窗口事件读取
+│   │   ├─ WindowCore.h/cpp         # 窗口样式
+│   │   └─ WindowLifecycle.h/cpp    # 窗口的创建与销毁
 │   ├─ Input/   # 输入处理
 │   │   ├─ InputDispatcher.h/cpp    # 捕获鼠标/键盘/触屏事件
 │   │   ├─ Keyboard.h/cpp           # 键盘状态查询接口
@@ -175,30 +164,166 @@ Source/
 依赖Core / Runtime / Engine，不被任何模块依赖
 实现具体业务逻辑（桌宠、UI、设置等）
 ├─ Systems/ # 系统层（核心逻辑）
+### 2.5.1.PetActor
 │  ├─ Pet/ # 桌宠系统
 │  │   ├─ PetActor.h/cpp # 桌宠核心对象（状态机+组件管理）
-│  │   ├─ Components/ # 桌宠功能组件
-│  │   │   ├─ AudioComponent.h/cpp # 控制音效播放
-│  │   │   ├─ ChatComponent.h/cpp  # 控制桌宠对话内容显示
-│  │   │   ├─ DiaryComponent.h/cpp # 写入桌宠日志/日记
-│  │   │   └─ InputComponent.h/cpp # 处理用户输入内容
-│  │   └─ Render/
-│  │       └─ PetRenderComponent.h/cpp # 桌宠绘制（位置/贴图/动画）
-│  └─ UI/ # UI系统
-│      ├─ UIActor.h/cpp # UI核心对象（管理所有UI界面）
-│      ├─ Components/ # UI行为组件（交互逻辑）
-│      │   ├─ CloseComponent.h/cpp # 关闭按钮行为（关闭程序）
-│      │   ├─ ScrollComponent.h/cpp # 滚动处理（列表/界面滚动）
-│      │   ├─ DragComponent.h/cpp # 拖动窗口/界面
-│      │   └─ InputComponent.h/cpp # UI输入框处理
-│      └─ Panels/ # UI界面（结构与渲染）
-│          ├─ ChatPanel.h/cpp # 聊天界面（显示对话）
-│          ├─ TaskPanel.h/cpp # 任务界面（任务列表）
-│          ├─ SettingPanel.h/cpp # 设置界面
-│          └─ OverlayPanel.h/cpp # 浮层UI（提示/覆盖层）
+│  │   └─ Components/ # 桌宠功能组件
+│  │       ├─ AudioComponent.h/cpp # 音频逻辑
+│  │       ├─ ChatComponent.h/cpp  # 文本逻辑
+│  │       ├─ DiaryComponent.h/cpp # 写入桌宠日志/日记
+│  │       ├─ InputComponent.h/cpp # 处理用户输入内容
+│  │       └─ PetRenderComponent.h/cpp # 规划桌宠的绘制（位置/贴图/动画）
+### 2.5.2.UIActor
+ChatPanel跟随桌宠移动，ToolPanel有自己的拖动功能。两个都调用Engine层的功能
+如果是正常的软件会需要一个MainToolPanel容器ui
+但我的桌宠本质上是一个铺满屏幕的大窗口，里面全部内容都是绘制的所以不需要容器
+│  ├─ UI/ # UI系统
+│  │   ├─ UIActor.h/cpp # UI核心对象（管理所有UI界面）
+│  │   ├─ Components/ # UI行为组件（交互逻辑）
+│  │   │   ├─ CloseComponent.h/cpp # 关闭全部页面（无页面时为展开输入栏，桌宠气泡不会被关闭）
+│  │   │   ├─ ScrollComponent.h/cpp # 滚动处理（列表/界面滚动）
+│  │   │   ├─ DragComponent.h/cpp # 拖动窗口/界面
+│  │   │   └─ InputComponent.h/cpp # UI输入框处理
+│  │   └─ Panels/ # UI界面（结构与渲染）
+│  │       ├─ ChatPanel/
+│  │       │   ├─ BubbleChatPanel.h/cpp # 桌宠消息气泡UI
+│  │       │   ├─ InputChatPanel.h/cpp  # 用户输入对话UI
+│  │       │   └─ OptionChatPanel.h/cpp # 用户选项对话UI
+│  │       └─ ToolPanel/
+│  │           ├─ SettingToolPanel.h/cpp # 设置界面UI
+│  │           └─ TaskToolPanel.h/cpp    # 任务管理器UI
+### 2.5.3.GameActor
+│  └─ Game/ # 病娇小游戏
+│      ├─ GameActor.h/cpp # 游戏本体
+│      ├─ GameComponent/
+│      │   ├─ GameAudioComponent.h/cpp # 游戏音频
+│      │   ├─ GameChatComponent.h/cpp  # 游戏文本
+│      └─ GameMap/
+│          ├─ Map1.h/cpp #关卡1
+│          ├─ Map2.h/cpp #关卡2
+│          ├─ Map3.h/cpp #关卡3
 ## 2.6.主循环程序
 └─ main.cpp # 程序入口（初始化系统、启动主循环）
 ## 2.7.最终效果
+Source/
+├─ Core/ # 基础库
+│  ├─ Path.h/cpp       # 计算和处理文件路径
+│  ├── FileSystem.h/cpp  # 在磁盘中读写文件（依赖于Path）
+│  ├─── TextFile.h/cpp     # 支持热更新的读写文本功能（依赖于FileSystem）
+│  ├─── Logger.h/cpp       # 输出日志文件（依赖于FileSystem）
+│  ├─── Config.h/cpp       # 配置管理器（依赖于FileSystem）
+│  └─ Timer.h/cpp      # 程序统一的时间工具
+├─ Domain/ # 流程库（预设的工作流，可直接调用）
+│
+├─ Engine/    # 引擎层：提供底层接口，Systems 调用它来实现功能
+│   ├─ Window/  # 窗口与渲染上下文管理
+│   │   ├─ WindowEvents.h/cpp       # 事件轮询与窗口事件读取
+│   │   ├─ WindowCore.h/cpp         # 窗口样式
+│   │   └─ WindowLifecycle.h/cpp    # 窗口的创建与销毁
+│   ├─ Input/   # 输入处理
+│   │   ├─ InputDispatcher.h/cpp    # 捕获鼠标/键盘/触屏事件
+│   │   ├─ Keyboard.h/cpp           # 键盘状态查询接口
+│   │   ├─ Mouse.h/cpp              # 鼠标状态/位置/点击接口
+│   │   └─ TextInputHandler.h/cpp   # 文本输入解析（字符/IME 支持）
+│   ├─ Render/  # 绘制与渲染封装
+│   │   ├─ Renderer.h/cpp           # 图片/UI绘制接口（位图、贴图、动画）
+│   │   ├─ Texture.h/cpp            # 贴图加载、管理、缓存
+│   │   └─ Animation.h/cpp          # 基础动画接口（帧动画、插值动画）
+│   └─ Audio/   # 音频封装
+│       ├─ AudioPlayer.h/cpp        # 播放音效/背景音乐
+│       └─ AudioResource.h/cpp      # 音频资源加载/缓存
+├─ Runtime/ # 协议层/中枢（无具体业务）
+│  ├─ EventBus.h/cpp # 事件发布/订阅中心（模块通信核心）
+│  ├─ Scheduler.h/cpp # 定时任务调度（延迟/循环任务）
+│  └─ StateManager.h/cpp # 全局状态管理（全局开关/配置）
+├─ Systems/ # 系统层（核心逻辑）
+│  ├─ Pet/ # 桌宠系统
+│  │   ├─ PetActor.h/cpp # 桌宠核心对象（状态机+组件管理）
+│  │   └─ Components/ # 桌宠功能组件
+│  │       ├─ AudioComponent.h/cpp # 音频逻辑
+│  │       ├─ ChatComponent.h/cpp  # 文本逻辑
+│  │       ├─ DiaryComponent.h/cpp # 写入桌宠日志/日记
+│  │       ├─ InputComponent.h/cpp # 处理用户输入内容
+│  │       └─ PetRenderComponent.h/cpp # 规划桌宠的绘制（位置/贴图/动画）
+│  ├─ UI/ # UI系统
+│  │   ├─ UIActor.h/cpp # UI核心对象（管理所有UI界面）
+│  │   ├─ Components/ # UI行为组件（交互逻辑）
+│  │   │   ├─ CloseComponent.h/cpp # 关闭全部页面（无页面时为展开输入栏，桌宠气泡不会被关闭）
+│  │   │   ├─ ScrollComponent.h/cpp # 滚动处理（列表/界面滚动）
+│  │   │   ├─ DragComponent.h/cpp # 拖动窗口/界面
+│  │   │   └─ InputComponent.h/cpp # UI输入框处理
+│  │   └─ Panels/ # UI界面（结构与渲染）
+│  │       ├─ ChatPanel/
+│  │       │   ├─ BubbleChatPanel.h/cpp # 桌宠消息气泡UI
+│  │       │   ├─ InputChatPanel.h/cpp  # 用户输入对话UI
+│  │       │   └─ OptionChatPanel.h/cpp # 用户选项对话UI
+│  │       └─ ToolPanel/
+│  │           ├─ SettingToolPanel.h/cpp # 设置界面UI
+│  │           └─ TaskToolPanel.h/cpp    # 任务管理器UI
+│  └─ Game/ # 病娇小游戏
+│      ├─ GameActor.h/cpp # 游戏本体
+│      ├─ GameComponent/
+│      │   ├─ GameAudioComponent.h/cpp # 游戏音频
+│      │   ├─ GameChatComponent.h/cpp  # 游戏文本
+│      └─ GameMap/
+│          ├─ Map1.h/cpp #关卡1
+│          ├─ Map2.h/cpp #关卡2
+│          ├─ Map3.h/cpp #关卡3
+└─ main.cpp # 程序入口（初始化系统、启动主循环）
+
+# 3.开发规范
+
+## 3.1.职责与依赖关系
+Core（基础库）
+职责：
+- 提供基础工具
+- 提供通用工具类
+非职责：
+- 不包含任何业务逻辑
+依赖关系：
+- 不依赖任何模块
+- 被任何模块依赖
+
+Runtime（通信层）
+职责：
+- 事件订阅系统EventBus
+- 定时调度系统Scheduler
+- 全局状态管理StateManager
+非职责：
+- 不包含任何业务逻辑
+依赖关系：
+- 依赖Core
+- 被Systems依赖
+
+Engine（引擎层）
+职责：
+- 封装窗口系统、输入系统、渲染
+- 提供与操作系统交互的能力
+非职责：
+- 不包含任何业务逻辑
+依赖关系：
+- 依赖Core
+- 被Systems依赖
+
+Systems（业务层）
+职责：
+- 实现具体业务逻辑（桌宠、UI、设置等）
+非职责：
+- 不实现底层工具
+- 不处理操作系统级功能
+依赖关系：
+- 依赖Core / Runtime / Engine
+- 不被任何模块依赖
+
+## 3.2.系统边界
+Core 只放通用工具
+Engine 只提供能力
+一切事件统一通过EventBus分发
+业务逻辑只存在于Systems
+## 3.3.命名规则
+
+## 3.4.注释规范
+每一段复杂代码都在开头说明：为什么这么做、输入输出、边界条件
 
 </div><!--class="text-block"-->
 </details><!--如何用c++写一个桌宠-->
