@@ -1,0 +1,124 @@
+/* Tab按钮 */
+.tab-header {
+    display:flex;
+    justify-content:space-around;
+    position:absolute;
+    bottom:-4px;
+    width:100%;
+    z-index:4;
+}
+.tab-header button {
+    flex:1;
+    margin:0 10px;
+    padding:15px;
+    border:2px solid #ccc;
+    border-radius:25px;
+    background-color:rgba(255,255,255,0.3);
+    font-size:18px;
+    font-weight:500;
+    cursor:pointer;
+    transition:all 0.3s ease;
+}
+.tab-header button:hover {
+    background-color:rgba(255,255,255,0.1);
+    transform:translateY(-2px);
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+.tab-header button.active {
+    background-color:rgba(255,255,255,0.5);
+    border-bottom-left-radius:0;
+    border-bottom-right-radius:0;
+}
+
+/* 内容 */
+.tab-content {
+    display:none;
+    position:relative;
+    z-index:5;
+    padding:25px;
+    margin:0 20px -20px 20px;
+    border-radius:0 0 20px 20px;
+    background-color:rgba(255,255,255,0.85);
+    border:2px solid #ccc;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+.tab-content.active {
+    display:block;
+}
+
+/* 文章样式 */
+.article-section {
+    margin:20px 0;
+    padding:18px 20px;
+    background:rgba(255,255,255,0.9);
+    border:1px solid #ddd;
+    border-radius:16px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.08);
+}
+.img-row {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.img-row img {
+    width:50%;
+}
+
+/* 目录 */
+.sidebar {
+    position:fixed;
+    top:150px;
+    right:-160px;
+    width:160px;
+    padding:10px;
+    background:rgba(245,245,245,0.9);
+    border-left:1px solid #ddd;
+    z-index:10;
+    box-sizing:border-box;
+    border-radius:16px 0 0 16px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.08);
+    transition:right 0.3s ease;
+}
+.sidebar.show {
+    right:0;
+}
+.sidebar::before {
+    content:"⮞";
+    position:absolute;
+    left:-20px;
+    top:35%;
+    font-size:18px;
+    color:#ded3fb;
+}
+.sidebar.show::before {
+    display:none;
+}
+.sidebar ul {
+    padding-left:0;
+    margin:0;
+    list-style:none;
+}
+.sidebar li {
+    margin-bottom:6px;
+}
+.sidebar a {
+    cursor:pointer;
+    color:#333;
+    text-decoration:none;
+    display:block;
+    padding:3px 6px;
+    border-radius:8px;
+}
+.sidebar a:hover,.sidebar a.active {
+    color:#0078D7;
+    background-color:
+    rgba(0,120,215,0.1);
+}
+.sidebar ul li ul {
+    display:none;
+    margin-left:10px;
+}
+.sidebar ul li ul.expanded {
+    display:block;
+}
+

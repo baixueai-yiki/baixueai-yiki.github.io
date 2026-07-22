@@ -1,0 +1,46 @@
+/* 雪花 */
+.snowflake {
+    position:fixed;
+    top:-10px;
+    color:white;
+    pointer-events:none;
+    user-select:none;
+    z-index:6;
+    animation:snowfall linear forwards;
+}
+/* 定义动画过程 */
+@keyframes snowfall {
+    0%{
+    transform:
+    translateX(0)
+    translateY(0)
+    rotate(0deg);
+    opacity:1;
+    }
+    50%{
+    transform:
+    translateX(20px)
+    translateY(50vh)
+    rotate(180deg);
+    }
+    100%{
+    transform:
+    translateX(-20px)
+    translateY(100vh)
+    rotate(360deg);
+    opacity:0;
+    }
+}
+
+/* 桌宠 */
+.desktop-pet {
+    position:fixed;
+    top:20px;
+    left:20px;
+    width:80px;
+    height:80px;
+    background-size:contain;
+    background-repeat:no-repeat;
+    cursor:pointer;
+    z-index:9999;
+}

@@ -1,0 +1,11 @@
+/*
+选择器{
+    属性: 值;
+}
+
+*/
+
+/* 作为主css引入其他css */
+@import url("css/animation.css");
+@import url("css/component.css");
+@import url("css/layout.css");

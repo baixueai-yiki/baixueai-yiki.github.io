@@ -1,0 +1,4 @@
+/* 文字换行 */
+.text-block {
+    white-space:pre-wrap;
+}
