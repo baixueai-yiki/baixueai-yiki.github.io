@@ -340,8 +340,8 @@ document.addEventListener("mousemove", e =>
 
 // 桌宠
 const pet = document.getElementById("desktop-pet");
-const idleGif = "Content/images/cat1.gif";
-const animGif = "Content/images/cat.gif";
+const idleGif = "Content/Images/cat1.gif";
+const animGif = "Content/Images/cat.gif";
 pet.style.backgroundImage = `url('${idleGif}')`;
 pet.onclick = () =>
 {
