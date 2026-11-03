@@ -64,6 +64,17 @@
     width:50%;
 }
 
+/* 文章正文：点开才加载 */
+.article-body.is-loading,
+.article-body.is-failed {
+    padding:6px 0;
+    font-size:14px;
+    color:#999;
+}
+.article-body.is-failed {
+    color:#b03a2e;
+}
+
 /* 目录 */
 .sidebar {
     position:fixed;

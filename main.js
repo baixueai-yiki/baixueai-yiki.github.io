@@ -71,6 +71,7 @@ function openTab(tabId)
     {
         loadTabHTML(tabId).then(() =>
         {
+            bindArticles(document.getElementById(tabId));
             generateSidebarTOC(tabId);
         });
         loadedTabs[tabId] = true;
@@ -102,6 +103,102 @@ function loadTabHTML(tabId)
     {
         document.getElementById(tabId).innerHTML =
             "<p>加载失败……</p>";
+    });
+}
+
+// 收起的文章也要知道自己在不在加载中
+const articleState = new WeakMap();
+
+function articleBody(details)
+{
+    let body = details.querySelector(".article-body");
+
+    if (!body)
+    {
+        body = document.createElement("div");
+        body.className = "article-body";
+        details.insertBefore(
+            body,
+            details.querySelector("summary").nextSibling
+        );
+    }
+    return body;
+}
+
+// 展开才去读文章文件，读过就不再读
+function loadArticle(details)
+{
+    const file = details.dataset.file;
+
+    if (!file)
+    {
+        return Promise.resolve();
+    }
+
+    const state = articleState.get(details);
+
+    if (state === "loaded")
+    {
+        return Promise.resolve();
+    }
+    if (state === "loading")
+    {
+        return details.loadPromise;
+    }
+
+    const body = articleBody(details);
+
+    body.classList.remove("is-failed");
+    body.classList.add("is-loading");
+    body.textContent = "正在读取……";
+    articleState.set(details, "loading");
+
+    const task = fetch(file)
+    .then(response =>
+    {
+        if (!response.ok)
+        {
+            throw new Error(response.status + " " + file);
+        }
+        return response.text();
+    })
+    .then(html =>
+    {
+        body.classList.remove("is-loading");
+        body.innerHTML = html;
+        articleState.set(details, "loaded");
+    })
+    .catch(error =>
+    {
+        body.classList.remove("is-loading");
+        body.classList.add("is-failed");
+        body.textContent = `这篇没读出来：${file}`;
+        articleState.set(details, "failed");
+        console.error(error);
+    });
+
+    details.loadPromise = task;
+    return task;
+}
+
+// 给骨架里带 data-file 的折叠块挂上展开事件
+function bindArticles(root)
+{
+    root.querySelectorAll("details[data-file]").forEach(details =>
+    {
+        if (details.dataset.bound)
+        {
+            return;
+        }
+        details.dataset.bound = "1";
+
+        details.addEventListener("toggle", () =>
+        {
+            if (details.open)
+            {
+                loadArticle(details);
+            }
+        });
     });
 }
 
@@ -156,10 +253,14 @@ function generateSidebarTOC(tabId)
                         {
                             child.open = true;
                         }
-                        child.scrollIntoView(
+                        // 先等内容到位，再滚过去，否则会停在半路
+                        loadArticle(child).then(() =>
                         {
-                            behavior: "smooth",
-                            block: "start"
+                            child.scrollIntoView(
+                            {
+                                behavior: "smooth",
+                                block: "start"
+                            });
                         });
                     };
                     childLi.appendChild(childLink);
