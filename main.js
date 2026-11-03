@@ -299,42 +299,103 @@ document
     });
 };
 
-// 侧边目录显示
+// 侧边目录：鼠标靠近展开、离开两秒后收起；点把手常驻展开，再点取消
 const sidebar = document.querySelector(".sidebar");
+const sidebarToggle = document.getElementById("sidebar-toggle");
+const SIDEBAR_HIDE_DELAY = 2000;
+
+let pinned = false;
 let hideTimer = null;
 let hovering = false;
 
-sidebar.addEventListener("mouseenter", () =>
+function showSidebar()
 {
-    hovering = true;
     sidebar.classList.add("show");
-    clearTimeout(hideTimer);
-});
+}
 
-sidebar.addEventListener("mouseleave", () =>
+function hideSidebarSoon()
 {
-    hovering = false;
-    hideTimer = setTimeout(() => 
+    if (pinned || hovering)
     {
+        return;
+    }
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() =>
+    {
+        hideTimer = null;
+        if (pinned || hovering)
+        {
+            return;
+        }
         sidebar.classList.remove("show");
-    }, 300);
+    }, SIDEBAR_HIDE_DELAY);
+}
+
+function setPinned(value)
+{
+    pinned = value;
+    sidebar.classList.toggle("pinned", pinned);
+    sidebarToggle.textContent = pinned ? "⮜" : "⮞";
+    sidebarToggle.title = pinned ? "点击取消常驻" : "点击常驻展开";
+
+    if (pinned)
+    {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+        showSidebar();
+    }
+    else
+    {
+        hideSidebarSoon();
+    }
+}
+
+sidebarToggle.addEventListener("click", () =>
+{
+    setPinned(!pinned);
 });
 
-document.addEventListener("mousemove", e =>
+sidebar.addEventListener("pointerenter", event =>
 {
+    if (event.pointerType !== "mouse")
+    {
+        return;
+    }
+    hovering = true;
+    clearTimeout(hideTimer);
+    hideTimer = null;
+    showSidebar();
+});
+
+sidebar.addEventListener("pointerleave", event =>
+{
+    if (event.pointerType !== "mouse")
+    {
+        return;
+    }
+    hovering = false;
+    hideSidebarSoon();
+});
+
+document.addEventListener("mousemove", event =>
+{
+    if (pinned)
+    {
+        return;
+    }
+
     const nearRight =
-        e.clientX > window.innerWidth - 30;
+        event.clientX > window.innerWidth - 30;
+
     if (nearRight)
     {
-        sidebar.classList.add("show");
         clearTimeout(hideTimer);
+        hideTimer = null;
+        showSidebar();
     }
-    else if (!hovering)
+    else if (!hovering && sidebar.classList.contains("show") && !hideTimer)
     {
-        hideTimer = setTimeout(() =>
-        {
-            sidebar.classList.remove("show");
-        }, 300);
+        hideSidebarSoon();
     }
 });
 

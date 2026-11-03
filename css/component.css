@@ -93,16 +93,44 @@
 .sidebar.show {
     right:0;
 }
-.sidebar::before {
-    content:"⮞";
+/* 展开/收起目录的把手 */
+.sidebar-handle {
     position:absolute;
-    left:-20px;
+    left:-26px;
     top:35%;
-    font-size:18px;
-    color:#ded3fb;
+    width:26px;
+    height:56px;
+    padding:0;
+    border:none;
+    border-radius:10px 0 0 10px;
+    background:rgba(245,245,245,0.9);
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    color:#b9a7e6;
+    font-size:16px;
+    line-height:56px;
+    text-align:center;
+    cursor:pointer;
+    transition:background-color 0.2s, color 0.2s;
 }
-.sidebar.show::before {
-    display:none;
+.sidebar-handle:hover {
+    color:#8a6fd0;
+}
+/* 常驻展开时把手变成实心，提示可以点回去 */
+.sidebar.pinned .sidebar-handle {
+    background:rgba(222,211,251,0.95);
+    color:#6b4fa8;
+}
+@media (max-width:600px) {
+    .sidebar {
+        top:120px;
+    }
+    .sidebar-handle {
+        left:-28px;
+        width:28px;
+        height:64px;
+        line-height:64px;
+        font-size:18px;
+    }
 }
 .sidebar ul {
     padding-left:0;
