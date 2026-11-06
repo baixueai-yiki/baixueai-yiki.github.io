@@ -302,7 +302,7 @@ document
 // 侧边目录：鼠标靠近展开、离开两秒后收起；点把手常驻展开，再点取消
 const sidebar = document.querySelector(".sidebar");
 const sidebarToggle = document.getElementById("sidebar-toggle");
-const SIDEBAR_HIDE_DELAY = 2000;
+const SIDEBAR_HIDE_DELAY = 500;
 
 let pinned = false;
 let hideTimer = null;
