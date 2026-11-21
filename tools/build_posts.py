@@ -35,6 +35,22 @@ def natural_key(name):
     return [(0, int(p)) if p.isdigit() else (1, p.lower()) for p in re.split(r"(\d+)", name)]
 
 
+# 文件夹名可以写成「1-教程」「2 作品」，前面的数字只用来排序，标题里不显示
+ORDER_RE = re.compile(r"^(\d+)\s*[-_.、\s]\s*(.+)$")
+
+
+def group_title(name):
+    match = ORDER_RE.match(name)
+    return match.group(2).strip() if match else name
+
+
+def group_key(name):
+    match = ORDER_RE.match(name)
+    if match:
+        return (0, int(match.group(1)))
+    return (1, natural_key(name))
+
+
 def rel_to_root(path):
     """转成从网站根开始的路径，这样内容页（在根目录）引用也不会错。"""
     return "/" + os.path.relpath(path, ROOT).replace("\\", "/")
@@ -43,7 +59,7 @@ def rel_to_root(path):
 def build_tab(tab_dir):
     groups = []
 
-    for entry in sorted(os.listdir(tab_dir), key=natural_key):
+    for entry in sorted(os.listdir(tab_dir), key=group_key):
         path = os.path.join(tab_dir, entry)
         if not os.path.isdir(path) or entry.startswith("."):
             continue
@@ -68,7 +84,7 @@ def build_tab(tab_dir):
                       % (fname, ext, NEEDS_EXPORT[ext]))
 
         if items:
-            groups.append({"title": entry, "items": items})
+            groups.append({"title": group_title(entry), "folder": entry, "items": items})
 
     return groups
 

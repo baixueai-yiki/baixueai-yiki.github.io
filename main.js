@@ -235,7 +235,7 @@ function renderPostList(root, tabId)
         if (!data.groups || !data.groups.length)
         {
             container.innerHTML =
-                '<p class="post-loading">这个抽屉还空着，把 word 丢进 Content/Posts/' +
+                '<p class="post-loading">这个抽屉还空着，把 pdf 丢进 Content/Posts/' +
                 listName + "/<分组>/ 就会出现在这里</p>";
             return;
         }
@@ -243,7 +243,7 @@ function renderPostList(root, tabId)
         data.groups.forEach(group =>
         {
             const details = document.createElement("details");
-            details.className = "post-group";
+            details.className = "post-group article-section";
             details.dataset.tocType = "parent";
             details.dataset.toc = group.title;
             details.open = true;

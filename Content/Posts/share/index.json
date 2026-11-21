@@ -1,4 +1,37 @@
 {
   "tab": "share",
-  "groups": []
+  "groups": [
+    {
+      "title": "教程",
+      "folder": "1-教程",
+      "items": [
+        {
+          "title": "如何在git上挂一个博客",
+          "path": "Content/Posts/share/1-教程/如何在git上挂一个博客.pdf",
+          "kind": "pdf"
+        },
+        {
+          "title": "如何用c++写一个桌宠",
+          "path": "Content/Posts/share/1-教程/如何用c++写一个桌宠.pdf",
+          "kind": "pdf"
+        }
+      ]
+    },
+    {
+      "title": "作品",
+      "folder": "2-作品",
+      "items": [
+        {
+          "title": "晴小姐陪伴系统",
+          "path": "Content/Posts/share/2-作品/晴小姐陪伴系统.pdf",
+          "kind": "pdf"
+        },
+        {
+          "title": "洛克语翻译器",
+          "path": "Content/Posts/share/2-作品/洛克语翻译器.pdf",
+          "kind": "pdf"
+        }
+      ]
+    }
+  ]
 }

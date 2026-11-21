@@ -179,25 +179,26 @@
 }
 .post-buttons {
     display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:12px;
+    flex-direction:column;
+    gap:8px;
+    margin-top:14px;
+    max-width:560px;
 }
 .post-link {
-    display:inline-block;
-    padding:10px 16px;
-    border:1px solid #ddd;
-    border-radius:12px;
-    background:rgba(255,255,255,0.92);
+    display:block;
+    padding:10px 14px;
+    border:1px solid #e6e0f2;
+    border-radius:10px;
+    background:#fff;
     color:#333;
     text-decoration:none;
-    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
     transition:border-color 0.2s, color 0.2s, transform 0.1s;
 }
 .post-link:hover {
     border-color:#b9a7e6;
     color:#6b4fa8;
-    transform:translateY(-1px);
+    background:#faf8ff;
 }
 
 /* 文章内容页 */
