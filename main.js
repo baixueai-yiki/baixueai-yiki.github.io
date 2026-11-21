@@ -71,7 +71,11 @@ function openTab(tabId)
     {
         loadTabHTML(tabId).then(() =>
         {
-            bindArticles(document.getElementById(tabId));
+            const content = document.getElementById(tabId);
+            bindArticles(content);
+            return renderPostList(content, tabId);
+        }).then(() =>
+        {
             generateSidebarTOC(tabId);
         });
         loadedTabs[tabId] = true;
@@ -202,6 +206,76 @@ function bindArticles(root)
     });
 }
 
+// 标签页里的文章列表：从 Content/Posts/<tab>/index.json 画分组和按钮
+function renderPostList(root, tabId)
+{
+    const container = root.querySelector("[data-post-list]");
+
+    if (!container)
+    {
+        return Promise.resolve();
+    }
+
+    const listName = container.dataset.postList || tabId;
+    const url = `Content/Posts/${listName}/index.json`;
+
+    return fetch(url, { cache: "no-store" })
+    .then(response =>
+    {
+        if (!response.ok)
+        {
+            throw new Error(response.status + " " + url);
+        }
+        return response.json();
+    })
+    .then(data =>
+    {
+        container.innerHTML = "";
+
+        if (!data.groups || !data.groups.length)
+        {
+            container.innerHTML =
+                '<p class="post-loading">这个抽屉还空着，把 word 丢进 Content/Posts/' +
+                listName + "/<分组>/ 就会出现在这里</p>";
+            return;
+        }
+
+        data.groups.forEach(group =>
+        {
+            const details = document.createElement("details");
+            details.className = "post-group";
+            details.dataset.tocType = "parent";
+            details.dataset.toc = group.title;
+            details.open = true;
+
+            const summary = document.createElement("summary");
+            summary.innerHTML = `<strong>${group.title}</strong>`;
+
+            const list = document.createElement("div");
+            list.className = "post-buttons";
+
+            group.items.forEach(item =>
+            {
+                const link = document.createElement("a");
+                link.className = "post-link";
+                link.href = `article.html?f=${encodeURIComponent(item.path)}&t=${tabId}`;
+                link.textContent = item.title;
+                list.appendChild(link);
+            });
+
+            details.appendChild(summary);
+            details.appendChild(list);
+            container.appendChild(details);
+        });
+    })
+    .catch(error =>
+    {
+        container.innerHTML =
+            '<p class="post-loading">文章列表没读出来，可能是还没生成</p>';
+        console.error(error);
+    });
+}
+
 // 自动生成目录
 function generateSidebarTOC(tabId)
 {
@@ -228,7 +302,7 @@ function generateSidebarTOC(tabId)
 
 
             const children = parent.querySelectorAll(
-                "details[data-toc-type='child']"
+                "details[data-toc-type='child'], a.post-link"
             );
 
 
@@ -242,27 +316,34 @@ function generateSidebarTOC(tabId)
 
                     const childLi = document.createElement("li");
                     const childLink = document.createElement("a");
+                    const isPostLink = child.tagName === "A";
 
                     childLink.href = "javascript:void(0)";
-                    childLink.textContent = child.dataset.toc;
+                    childLink.textContent = isPostLink
+                        ? child.textContent
+                        : child.dataset.toc;
 
-                    childLink.onclick = () =>
-                    {
-
-                        if (!child.open)
+                    childLink.onclick = isPostLink
+                        ? () =>
                         {
-                            child.open = true;
+                            location.href = child.getAttribute("href");
                         }
-                        // 先等内容到位，再滚过去，否则会停在半路
-                        loadArticle(child).then(() =>
+                        : () =>
                         {
-                            child.scrollIntoView(
+                            if (!child.open)
                             {
-                                behavior: "smooth",
-                                block: "start"
+                                child.open = true;
+                            }
+                            // 先等内容到位，再滚过去，否则会停在半路
+                            loadArticle(child).then(() =>
+                            {
+                                child.scrollIntoView(
+                                {
+                                    behavior: "smooth",
+                                    block: "start"
+                                });
                             });
-                        });
-                    };
+                        };
                     childLi.appendChild(childLink);
                     ul.appendChild(childLi);
                 });

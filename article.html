@@ -1,0 +1,98 @@
+<!DOCTYPE html><!-- 文章内容页：?f=文章文件 &t=来自哪个抽屉 -->
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>苹果网</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="Content/Icon/apple.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="content-background"></div>
+
+<!-- pdf：整页交给浏览器自己的阅读器 -->
+<div class="reader reader-pdf" id="reader-pdf" hidden>
+  <div class="reader-bar">
+    <a class="reader-back" id="pdf-back" href="index.html">← 返回</a>
+    <span class="reader-name" id="pdf-name"></span>
+    <a class="reader-open" id="pdf-open" href="#" target="_blank">在新标签打开</a>
+  </div>
+  <iframe class="reader-frame" id="reader-frame" title="文章内容"></iframe>
+</div>
+
+<!-- html：老文章还是塞进卡片里 -->
+<div class="reader" id="reader-html">
+  <a class="reader-back" id="reader-back" href="index.html">← 返回</a>
+  <h1 class="reader-title" id="reader-title">正在打开……</h1>
+  <div class="reader-body" id="reader-body"></div>
+</div>
+
+<script>
+(function ()
+{
+    const params = new URLSearchParams(location.search);
+    const file = params.get("f");
+    const tab = params.get("t");
+    const home = "index.html" + (tab ? "#" + tab : "");
+
+    const pdfBox = document.getElementById("reader-pdf");
+    const htmlBox = document.getElementById("reader-html");
+    const frame = document.getElementById("reader-frame");
+    const pdfName = document.getElementById("pdf-name");
+    const pdfOpen = document.getElementById("pdf-open");
+    const htmlBack = document.getElementById("reader-back");
+
+    document.getElementById("pdf-back").href = home;
+    htmlBack.href = home;
+
+    if (!file)
+    {
+        document.getElementById("reader-title").textContent = "没说要打开哪一篇";
+        return;
+    }
+
+    const name = decodeURIComponent(file.split("/").pop())
+        .replace(/\.(html|docx|pdf)$/i, "");
+
+    document.title = name + " · 苹果网";
+
+    if (/\.pdf$/i.test(file))
+    {
+        pdfBox.hidden = false;
+        htmlBox.hidden = true;
+        pdfName.textContent = name;
+        pdfOpen.href = file;
+        frame.src = file;
+        return;
+    }
+
+    // 其余的按网页片段读
+    document.getElementById("reader-title").textContent = name;
+
+    fetch(file)
+    .then(response =>
+    {
+        if (!response.ok)
+        {
+            throw new Error(response.status + " " + file);
+        }
+        return response.text();
+    })
+    .then(html =>
+    {
+        document.getElementById("reader-body").innerHTML = html;
+    })
+    .catch(error =>
+    {
+        document.getElementById("reader-body").innerHTML =
+            '<p class="post-loading">这篇没读出来：' + file + "</p>";
+        console.error(error);
+    });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+{
+  "tab": "recommend",
+  "groups": [
+    {
+      "title": "地编",
+      "items": [
+        {
+          "title": "世界机器WorldMachine",
+          "path": "Content/Posts/recommend/地编/世界机器WorldMachine.pdf",
+          "kind": "pdf"
+        }
+      ]
+    },
+    {
+      "title": "日常工具",
+      "items": [
+        {
+          "title": "微软云盘OneDrive",
+          "path": "Content/Posts/recommend/日常工具/微软云盘OneDrive.pdf",
+          "kind": "pdf"
+        },
+        {
+          "title": "微软笔记OneNote",
+          "path": "Content/Posts/recommend/日常工具/微软笔记OneNote.pdf",
+          "kind": "pdf"
+        },
+        {
+          "title": "翻译软件Pot",
+          "path": "Content/Posts/recommend/日常工具/翻译软件Pot.pdf",
+          "kind": "pdf"
+        }
+      ]
+    },
+    {
+      "title": "网站",
+      "items": [
+        {
+          "title": "在线制作日历",
+          "path": "Content/Posts/recommend/网站/在线制作日历.pdf",
+          "kind": "pdf"
+        },
+        {
+          "title": "在线制作雷达图",
+          "path": "Content/Posts/recommend/网站/在线制作雷达图.pdf",
+          "kind": "pdf"
+        },
+        {
+          "title": "架空地图模拟器",
+          "path": "Content/Posts/recommend/网站/架空地图模拟器.pdf",
+          "kind": "pdf"
+        },
+        {
+          "title": "柏林噪声库FastNoiseLite",
+          "path": "Content/Posts/recommend/网站/柏林噪声库FastNoiseLite.pdf",
+          "kind": "pdf"
+        },
+        {
+          "title": "流程图绘制diagrams",
+          "path": "Content/Posts/recommend/网站/流程图绘制diagrams.pdf",
+          "kind": "pdf"
+        }
+      ]
+    }
+  ]
+}
