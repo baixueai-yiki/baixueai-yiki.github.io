@@ -313,6 +313,11 @@
     padding:16px;
     box-sizing:border-box;
     min-height:0;
+    /* A4 纸在 96dpi 下是 794px：宽度卡在这里，页面就按原大显示，不会被放大 */
+    width:100%;
+    max-width:826px;
+    margin:0 auto;
+    align-self:center;
 }
 .reader-name {
     font-weight:600;
