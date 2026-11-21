@@ -35,6 +35,7 @@
     display:none;
     position:relative;
     z-index:5;
+    /* 两档就够：宽屏一套、窄屏一套 */
     padding:25px;
     margin:0 20px -20px 20px;
     border-radius:0 0 20px 20px;
@@ -182,7 +183,6 @@
     flex-direction:column;
     gap:8px;
     margin-top:14px;
-    max-width:560px;
 }
 .post-link {
     display:block;
@@ -261,6 +261,17 @@
     }
     .post-link {
         padding:10px 14px;
+    }
+    /* 窄屏：把两层留白收窄，按钮才贴得到屏幕右边 */
+    .tab-content {
+        margin:0 10px -20px 10px;
+        padding:14px 12px;
+    }
+    .article-section {
+        padding:14px 12px;
+    }
+    .post-group {
+        margin:12px 0 16px 0;
     }
 }
 
