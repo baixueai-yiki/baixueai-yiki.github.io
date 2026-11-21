@@ -20,7 +20,9 @@
     <span class="reader-name" id="pdf-name"></span>
     <a class="reader-open" id="pdf-open" href="#" target="_blank">在新标签打开</a>
   </div>
-  <iframe class="reader-frame" id="reader-frame" title="文章内容"></iframe>
+  <div class="pdf-stage">
+    <iframe class="reader-frame" id="reader-frame" title="文章内容"></iframe>
+  </div>
 </div>
 
 <!-- html：老文章还是塞进卡片里 -->
@@ -65,7 +67,8 @@
         htmlBox.hidden = true;
         pdfName.textContent = name;
         pdfOpen.href = file;
-        frame.src = file;
+        // 让浏览器自带的阅读器把工具栏收起来，只留纸面
+        frame.src = file + "#toolbar=0&navpanes=0&statusbar=0&view=FitH";
         return;
     }
 
